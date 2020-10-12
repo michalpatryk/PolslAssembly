@@ -1,2 +1,3 @@
 ﻿  BMPEditor.cpp
+C:\Users\michalpatryk\source\repos\PolslAssembly\JAProjekt\JAProjekt\BMPEditor.cpp(82,53): warning C4552: '*': result of expression not used
   JAProjekt.vcxproj -> C:\Users\michalpatryk\source\repos\PolslAssembly\JAProjekt\x64\Debug\JAProjekt.exe
