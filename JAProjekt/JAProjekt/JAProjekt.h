@@ -17,4 +17,5 @@ private slots:
     void on_loadFileButton_clicked();
     void on_cppAlgButton_clicked();
     void on_asmAlgButton_clicked();
+    void on_saveFileButton_clicked();
 };
