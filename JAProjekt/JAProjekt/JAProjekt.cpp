@@ -19,7 +19,7 @@ void JAProjekt::on_loadFileButton_clicked()
 	if(!fileName.isEmpty())
 	{
         ui.sourceLocationLabel->setText(fileName);
-        bmpEditor.setFilename(fileName.toStdString());
+        bmpEditor.setSourceFilename(fileName.toStdString());
         ui.asmAlgButton->setEnabled(true);
         ui.cppAlgButton->setEnabled(true);
         ui.saveFileButton->setEnabled(true);
@@ -41,5 +41,9 @@ void JAProjekt::on_saveFileButton_clicked()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save Image"), "/home/jana", tr("Image Files (*.bmp);;All Files (*)"));
-    ui.sourceLocationLabel->setText(fileName);
+    if (!fileName.isEmpty())
+    {
+        ui.sourceLocationLabel->setText(fileName);
+        bmpEditor.setDestinationFilename(fileName.toStdString());
+    }
 }

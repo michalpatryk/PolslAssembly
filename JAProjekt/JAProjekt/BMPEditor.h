@@ -13,7 +13,8 @@ enum class AlgorithmType
 class BMPEditor
 {
 	
-	std::string filename;
+	std::string sourceFilename;
+	std::string destinationFilename;
 	
 	BITMAPFILEHEADER fileHeader;
 		/*WORD  bfType;
@@ -31,7 +32,8 @@ class BMPEditor
 	void getMemoryStatus();
 public:
 	BMPEditor() {};
-	void setFilename(std::string file) { filename = file; };
+	void setSourceFilename(std::string file) { sourceFilename = file; };
+	void setDestinationFilename(std::string file) { destinationFilename = file; };
 	std::string runAlgorithm(AlgorithmType algType, unsigned int threadCount);
 private:
 	

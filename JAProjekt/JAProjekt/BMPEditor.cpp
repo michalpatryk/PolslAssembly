@@ -47,7 +47,8 @@ void BMPEditor::getMemoryStatus()
 std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCount)
 {
 	//Stream initialization
-	std::ifstream fileStream(filename, std::ios::binary);
+	std::ifstream fileStream(sourceFilename, std::ios::binary);
+	std::ofstream outStream(destinationFilename, std::ios::binary);
 	if(!fileStream.is_open())
 	{
 		return std::string("File not found");
@@ -67,6 +68,21 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 
 	//Thread vectorization
 	std::vector<std::thread> threadVector;
+
+	//TODO
+	//Add full copy of anything between ios::begin and fileHeader.bfOffBits to output file
+	//Add disk avaliable space test/warning
+	//	--QueryPerformanceCounter-- START
+	//All bellow in while ifstream+chunkSize > ios::end
+	//	Add chunk read
+	//	Add chunk division
+	//	Add divided chunk process (by dll)
+	//	Add processed chunk save
+	//Add last chunk read
+	//Add last divided chunk process (by dll)
+	//Add last chunk save
+	//	--QueryPerformanceCounter-- END
+	//	Add extra timer - without file reads/writes
 	
 	fileStream.close();
 	return std::string();
