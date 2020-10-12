@@ -44,6 +44,90 @@ void BMPEditor::getMemoryStatus()
 	GlobalMemoryStatusEx(&statex);
 }
 
+//This function might look ugly, but it does it job well. Its a closed box that runs algorithms, nothing more.
+//Yes, it takes a lot of arguments - but it wouldn't change a thing if these were made global by class.
+//Yes, there is DRY - but its repeated only twice, and the second time it has some 'extras' - trying to make a special function
+//just to avoid it would only lead to bugs and little gain.
+void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream, 
+	unsigned int threadCount, AlgorithmType algType)
+{
+	maxProgramMemUse = maxProgramMemUse - (maxProgramMemUse % threadCount);
+	DWORD remainingFileSize = fileHeader.bfSize;
+
+	//Main alg loop
+	while (maxProgramMemUse < remainingFileSize)
+	{
+		char* arrToSplit = new char[maxProgramMemUse];
+		fileStream.read(arrToSplit, maxProgramMemUse);
+
+		DWORDLONG splitValue = maxProgramMemUse / threadCount;
+
+		std::vector<std::thread> threadVector;
+		for (unsigned int i = 0; i < threadCount; i++)
+		{
+			for (unsigned int j = 0; j * splitValue < maxProgramMemUse; j++)
+			{
+				if (algType == AlgorithmType::cppAlgorithm)
+				{
+					//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j+ splitValue));
+				}
+				//else { std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j+ splitValue)); };
+			}
+			//threadVector.push_back(move(t));
+
+		}
+		for (std::thread& th : threadVector)
+		{
+			th.join();
+		}
+		//outStream.write(arrToSplit, maxProgramMemUse);
+		delete[] arrToSplit;
+		remainingFileSize -= maxProgramMemUse;
+	}
+	
+	//Now we process the rest of the pixel array
+	char* arrToSplit = new char[remainingFileSize];
+	fileStream.read(arrToSplit, remainingFileSize);
+	DWORDLONG extra = remainingFileSize % threadCount;
+
+	DWORDLONG splitValue = remainingFileSize / threadCount;
+
+	std::vector<std::thread> threadVector;
+	for (unsigned int i = 0; i < threadCount; i++)
+	{
+		for (unsigned int j = 0; j * splitValue < maxProgramMemUse; j++)
+		{
+			int k = j * splitValue;
+			if (algType == AlgorithmType::cppAlgorithm)
+			{
+				if (k > maxProgramMemUse)
+				{
+					//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
+				}
+				//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j + splitValue));
+
+			}
+			else
+			{
+				if (k > maxProgramMemUse)
+				{
+					//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
+				}
+				//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
+			}
+			//threadVector.push_back(move(t));
+		}
+
+	}
+	for (std::thread& th : threadVector)
+	{
+		th.join();
+	}
+	//
+	//outStream.write(arrToSplit, maxProgramMemUse + extra);
+	delete[] arrToSplit;
+}
+
 std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCount)
 {
 	//Stream initialization
@@ -68,69 +152,9 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	DWORDLONG memsize = statex.ullTotalPhys;
 	DWORDLONG maxProgramMemUse = memsize * 2 / 3;	//maximum 70% memory load
 
-	maxProgramMemUse = maxProgramMemUse - (maxProgramMemUse % threadCount);
-	DWORD remainingFileSize = fileHeader.bfSize;
-
-	//Main alg loop
-	while (maxProgramMemUse < remainingFileSize)
-	{
-		char* arrToSplit = new char[maxProgramMemUse];
-		fileStream.read(arrToSplit, maxProgramMemUse);
-		
-		DWORDLONG splitValue = maxProgramMemUse / threadCount;
-
-		std::vector<std::thread> threadVector;
-		for (unsigned int i = 0; i < threadCount; i++)
-		{
-			for ( unsigned int j = 0 ; j*splitValue < maxProgramMemUse; j++)
-			{
-				if (algType == AlgorithmType::cppAlgorithm)
-				{
-					//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j+ splitValue));
-				}
-				//else { std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j+ splitValue)); };
-			}
-			
-		}
-		//outStream.write(arrToSplit, maxProgramMemUse);
-		delete[] arrToSplit;
-		remainingFileSize -= maxProgramMemUse;
-	}
-
-	char* arrToSplit = new char[remainingFileSize];
-	fileStream.read(arrToSplit, remainingFileSize);
-	DWORDLONG extra = remainingFileSize % threadCount;
-
-	DWORDLONG splitValue = remainingFileSize / threadCount;
-
-	std::vector<std::thread> threadVector;
-	for (unsigned int i = 0; i < threadCount; i++)
-	{
-		for (unsigned int j = 0; j * splitValue < maxProgramMemUse; j++)
-		{
-			int k = j * splitValue;
-			if (algType == AlgorithmType::cppAlgorithm)
-			{
-				if (k > maxProgramMemUse)
-				{
-					//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
-				}
-				//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j + splitValue));
-				
-			}
-			else
-			{
-				if (k > maxProgramMemUse)
-				{
-					//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
-				}
-				//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
-			}
-		}
-
-	}
-	//outStream.write(arrToSplit, maxProgramMemUse + extra);
-	delete[] arrToSplit;
+	//Runs main algorithm
+	algorithmParallelRunner(maxProgramMemUse, fileStream, outStream, threadCount, algType);
+	
 	
 	//TODO
 	//Add full copy of anything between ios::begin and fileHeader.bfOffBits to output file									X
@@ -148,5 +172,6 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	//	Add extra timer - without file reads/writes																			X
 	
 	fileStream.close();
+	outStream.close();
 	return std::string();
 }

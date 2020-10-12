@@ -30,6 +30,8 @@ class BMPEditor
 	MEMORYSTATUSEX statex;
 	std::optional<std::string> headerParser(std::ifstream& fileStream);
 	void getMemoryStatus();
+	void algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
+		unsigned int threadCount, AlgorithmType algType);
 public:
 	BMPEditor() {};
 	void setSourceFilename(std::string file) { sourceFilename = file; };
