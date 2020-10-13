@@ -207,17 +207,17 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	//TODO
 	//Add full copy of anything between ios::begin and fileHeader.bfOffBits to output file									+
 	//Add disk avaliable space test/warning																					+
-	//	--QueryPerformanceCounter-- START																					X
+	//	--QueryPerformanceCounter-- START																low priority->		X
 	//All bellow in while ifstream+chunkSize > ios::end																		X
 	//	Add chunk read																										+
 	//	Add chunk division																									+
-	//	Add divided chunk process (by dll)																					X
-	//	Add processed chunk save																							X
+	//	Add divided chunk process (by dll)														lowest priority->			X
+	//	Add processed chunk save																							X <- priority
 	//Add last chunk read																									+
 	//Add last divided chunk process (by dll)																				+
-	//Add last chunk save																									X
-	//	--QueryPerformanceCounter-- END																						X
-	//	Add extra timer - without file reads/writes																			X
+	//Add last chunk save																									X <- priority
+	//	--QueryPerformanceCounter-- END																	low priority->		X
+	//	Add extra timer - without file reads/writes													very low priority->		X
 	
 	fileStream.close();
 	outStream.close();
