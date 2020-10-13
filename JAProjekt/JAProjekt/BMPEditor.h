@@ -2,6 +2,7 @@
 #include <fstream>
 #include <optional>
 #include <string>
+#define NOMINMAX
 #include <Windows.h>
 #include <wingdi.h>
 enum class AlgorithmType
@@ -33,6 +34,7 @@ class BMPEditor
 	void getMemoryStatus();
 	void algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
 		unsigned int threadCount, AlgorithmType algType);
+	bool isEnoughDiskSpace();
 public:
 	BMPEditor() {};
 	void setSourceFilename(std::string file) { sourceFilename = file; };

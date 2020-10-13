@@ -137,6 +137,42 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	delete[] arrToSplit;
 }
 
+bool BMPEditor::isEnoughDiskSpace()
+{
+	//disk space
+	BOOL  fResult;
+	unsigned __int64 i64FreeBytesToCaller,
+		i64TotalBytes,
+		i64FreeBytes;
+	fResult = GetDiskFreeSpaceEx(L"C:",
+		(PULARGE_INTEGER)&i64FreeBytesToCaller,
+		(PULARGE_INTEGER)&i64TotalBytes,
+		(PULARGE_INTEGER)&i64FreeBytes);
+	//string to wstring
+	std::wstring stemp = std::wstring(sourceFilename.begin(), sourceFilename.end());
+	LPCWSTR sw = stemp.c_str();
+	//get file handle
+	HANDLE hFile = CreateFile(sw, GENERIC_READ,
+		FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return false; // error condition, could call GetLastError to find out more
+	//get file size
+	LARGE_INTEGER size;
+	if (!GetFileSizeEx(hFile, &size))
+	{
+		CloseHandle(hFile);
+		return false; // error condition, could call GetLastError to find out more
+	}
+
+	CloseHandle(hFile);
+	if (size.QuadPart > i64FreeBytes)
+	{
+		return false;
+	}
+	else return true;
+}
+
 std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCount)
 {
 	//Stream initialization
@@ -146,7 +182,10 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	{
 		return std::string("File not found");
 	}
-
+	if(!isEnoughDiskSpace())
+	{
+		return std::string("Not enough disk space on selected destination!");
+	}
 	//Header parsing
 	std::optional<std::string> headerParserError = headerParser(fileStream);
 	if (headerParserError.has_value())
@@ -167,7 +206,7 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	
 	//TODO
 	//Add full copy of anything between ios::begin and fileHeader.bfOffBits to output file									+
-	//Add disk avaliable space test/warning																					X
+	//Add disk avaliable space test/warning																					+
 	//	--QueryPerformanceCounter-- START																					X
 	//All bellow in while ifstream+chunkSize > ios::end																		X
 	//	Add chunk read																										+
