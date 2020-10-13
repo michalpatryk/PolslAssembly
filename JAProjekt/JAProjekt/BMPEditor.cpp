@@ -38,6 +38,14 @@ std::optional <std::string> BMPEditor::headerParser(std::ifstream& fileStream)
 	return std::nullopt;
 }
 
+void BMPEditor::headerRewriter(std::ifstream& fileStream, std::ofstream& outStream)
+{
+	fileStream.seekg(0, std::ios::beg);
+	char* rewriter = new char[fileHeader.bfOffBits];
+	fileStream.read(rewriter, fileHeader.bfOffBits);
+	outStream.write(rewriter, fileHeader.bfOffBits);
+}
+
 void BMPEditor::getMemoryStatus()
 {
 	statex.dwLength = sizeof(statex);
@@ -51,6 +59,7 @@ void BMPEditor::getMemoryStatus()
 void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream, 
 	unsigned int threadCount, AlgorithmType algType)
 {
+	fileStream.seekg(fileHeader.bfOffBits, std::ios::beg);
 	maxProgramMemUse = maxProgramMemUse - (maxProgramMemUse % threadCount);
 	DWORD remainingFileSize = fileHeader.bfSize;
 
@@ -142,11 +151,11 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	std::optional<std::string> headerParserError = headerParser(fileStream);
 	if (headerParserError.has_value())
 	{
-		return headerParserError.value();
+		return headerParserError.value();	//resets filestream to start
 	}
-	//TODO
-	//Add rewriting everything between ios::begin and bfOffBits
-	
+	//Header writing in outfile
+	headerRewriter(fileStream, outStream);
+
 	//Memory check	
 	getMemoryStatus();
 	DWORDLONG memsize = statex.ullTotalPhys;
@@ -157,7 +166,7 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	
 	
 	//TODO
-	//Add full copy of anything between ios::begin and fileHeader.bfOffBits to output file									X
+	//Add full copy of anything between ios::begin and fileHeader.bfOffBits to output file									+
 	//Add disk avaliable space test/warning																					X
 	//	--QueryPerformanceCounter-- START																					X
 	//All bellow in while ifstream+chunkSize > ios::end																		X

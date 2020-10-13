@@ -29,6 +29,7 @@ class BMPEditor
 	LONG biHeight;
 	MEMORYSTATUSEX statex;
 	std::optional<std::string> headerParser(std::ifstream& fileStream);
+	void headerRewriter(std::ifstream& fileStream, std::ofstream& outStream);
 	void getMemoryStatus();
 	void algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
 		unsigned int threadCount, AlgorithmType algType);
