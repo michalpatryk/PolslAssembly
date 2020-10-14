@@ -1,11 +1,15 @@
 #include "BMPEditor.h"
+//#pragma comment(lib, "JAProjektCppLibrary.dll")
+//#include <JAProjektCppLibrary.dll>
 #include <filesystem>
 #include <iostream>
 #include <thread>
 
+#include "../JAProjektCppLibrary/JAProjektCppLibrary.h"
+
 std::optional <std::string> BMPEditor::headerParser(std::ifstream& fileStream)
 {
-
+	int b = testFunction(5);
 	fileStream.read((char*)(&fileHeader), 14);		//We are loading Bitmap file header
 	DWORD headerSize;
 	fileStream.read((char*)(&headerSize), 4);//gets the size of the header
