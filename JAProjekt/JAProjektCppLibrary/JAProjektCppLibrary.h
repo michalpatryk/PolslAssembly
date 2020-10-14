@@ -7,3 +7,4 @@
 #endif
 
 extern "C" JAPROJEKTCPPLIBRARY_API int testFunction(unsigned long a);
+extern "C" JAPROJEKTCPPLIBRARY_API void cppBinarization1(char* begin, char* end, long biWidth, float treshold);

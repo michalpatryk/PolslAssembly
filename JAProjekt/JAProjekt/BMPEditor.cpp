@@ -55,7 +55,14 @@ void BMPEditor::getMemoryStatus()
 	statex.dwLength = sizeof(statex);
 	GlobalMemoryStatusEx(&statex);
 }
-
+void f1(int n)
+{
+	for (int i = 0; i < 5; ++i) {
+		std::cout << "Thread 1 executing\n";
+		++n;
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+}
 //This function might look ugly, but it does it job well. Its a closed box that runs algorithms, nothing more.
 //Yes, it takes a lot of arguments - but it wouldn't change a thing if these were made global by class.
 //Yes, there is DRY - but its repeated only twice, and the second time it has some 'extras' - trying to make a special function
@@ -86,7 +93,7 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 
 		for (unsigned int i = 0; i < threadCount; i++)
 		{
-			wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize);
+			wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 60);
 
 		}
 
@@ -113,18 +120,35 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	{
 		if (i + 1 > threadCount)
 		{
-			wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize);
+			
+			//std::thread t1(cppBinarization1, std::ref(arrToSplit + (i * rowsPerThread * rowSize)), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize, 0.2);
+			//cppBinarization1(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize, 0.2);
+			//wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize, 0.2);
+			//threadVector.push_back(std::move(t1));
 		}
 		else
 		{
-			wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize);
+			//std::thread t1(f1, 2);
+			std::thread t1(cppBinarization1, 
+				arrToSplit + (i * rowsPerThread * rowSize), 
+				arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, 
+				rowSize, 
+				0.2
+			);
+			t1.join();
+			//cppBinarization1(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);
+			//wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);
+			//threadVector.push_back(std::move(t1));
+			//threadVector[i].join();
+			
 		}
+		
 	}
 	algOnlyTimer.resume();
 
 	for (std::thread& th : threadVector)
 	{
-		th.join();
+		//th.join();
 	}
 	algOnlyTimer.stop();
 	outStream.write(arrToSplit, remainingFileSize);
@@ -167,31 +191,8 @@ bool BMPEditor::isEnoughDiskSpace()
 	else return true;
 }
 
-void BMPEditor::wipEditor(char* begin, char* end, long biWidth)
+void BMPEditor::wipEditor(char* begin, char* end, long biWidth, float treshold)
 {
-#if 0
-	char* currPos = begin;
-	while (currPos + 2 != end)
-	{
-		float R = *(currPos);
-		float G = *(currPos + 1);
-		float B = *(currPos + 2);
-		uint8_t Res = R * 0.299 + G * 0.587 + B * 0.144;
-		if (Res > 256 * 0.6)
-		{
-			*(currPos) = 255;
-			*(currPos + 1) = 255;
-			*(currPos + 2) = 255;
-		}
-		else
-		{
-			*(currPos) = 0;
-			*(currPos + 1) = 0;
-			*(currPos + 2) = 0;
-		}
-		currPos += 3;
-	}
-#endif
 	char* currPos = begin;
 	long currByteLoc = 0;
 	while (currPos < end)
@@ -200,7 +201,7 @@ void BMPEditor::wipEditor(char* begin, char* end, long biWidth)
 		float G = *(currPos + 1);
 		float B = *(currPos + 2);
 		uint8_t Res = R * 0.299 + G * 0.587 + B * 0.144;
-		if (Res > 256 * 0.6)
+		if (Res > 256 * treshold)
 		{
 			*(currPos) = 255;
 			*(currPos + 1) = 255;

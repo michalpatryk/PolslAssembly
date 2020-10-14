@@ -42,7 +42,7 @@ class BMPEditor
 		unsigned int threadCount, AlgorithmType algType);
 	bool isEnoughDiskSpace();
 
-	void wipEditor(char* begin, char* end, long biWidth);
+	void wipEditor(char* begin, char* end, long biWidth, float treshold);
 	
 public:
 	BMPEditor() {};
