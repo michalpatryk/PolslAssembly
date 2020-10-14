@@ -123,8 +123,10 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 				{
 					//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
 				}
-				//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j + splitValue));
-
+				else
+				{
+					//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j + splitValue));
+				}
 			}
 			else
 			{
@@ -132,13 +134,20 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 				{
 					//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
 				}
-				//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
+				else
+				{
+					
+					//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
+					
+				}
+				
 			}
 			//threadVector.push_back(move(t));
 		}
 
 	}
 	algOnlyTimer.resume();
+
 	for (std::thread& th : threadVector)
 	{
 		th.join();
