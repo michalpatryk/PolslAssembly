@@ -179,6 +179,14 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	//Stream initialization
 	std::ifstream fileStream(sourceFilename, std::ios::binary);
 	std::ofstream outStream(destinationFilename, std::ios::binary);
+	
+	LARGE_INTEGER li;
+	QueryPerformanceFrequency(&li);	//gets frequency of the performance counter
+	__int64 frequency = li.QuadPart;
+	QueryPerformanceCounter(&li);	//gets current value of frequency timer
+	__int64 CounterStart = li.QuadPart;
+
+	
 	if(!fileStream.is_open())
 	{
 		return std::string("File not found");
@@ -219,7 +227,10 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	//Add last chunk save																									+
 	//	--QueryPerformanceCounter-- END																	low priority->		X
 	//	Add extra timer - without file reads/writes													very low priority->		X
-	
+	QueryPerformanceCounter(&li);
+	__int64 CounterEnd = li.QuadPart;
+	//TODO
+	//outstream to the rest of file
 	fileStream.close();
 	outStream.close();
 	return std::string();
