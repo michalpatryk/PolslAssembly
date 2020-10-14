@@ -60,7 +60,7 @@ void BMPEditor::getMemoryStatus()
 //Yes, it takes a lot of arguments - but it wouldn't change a thing if these were made global by class.
 //Yes, there is DRY - but its repeated only twice, and the second time it has some 'extras' - trying to make a special function
 //just to avoid it would only lead to bugs and little gain.
-void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream, 
+void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
 	unsigned int threadCount, AlgorithmType algType)
 {
 	fileStream.seekg(fileHeader.bfOffBits, std::ios::beg);
@@ -69,86 +69,56 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	DWORD remainingFileSize = fileHeader.bfSize;
 	algOnlyTimer.start();
 	algOnlyTimer.pause();
+
+	//calculate bytes per row
+	long rowSize = std::ceil((float)(24 * biWidth) / 32.0) * 4;
+	//we are assuming, that we have enough memory to store rowSize*threadCount
+
 	//Main alg loop
 	while (maxProgramMemUse < remainingFileSize)
 	{
 		char* arrToSplit = new char[maxProgramMemUse];
 		fileStream.read(arrToSplit, maxProgramMemUse);
-
-		DWORDLONG splitValue = maxProgramMemUse / threadCount;
-
 		std::vector<std::thread> threadVector;
-		
+
+		long rowsPerThread = std::floor(maxProgramMemUse / (rowSize * threadCount));
+		long processedSize = rowsPerThread * threadCount;
+
 		for (unsigned int i = 0; i < threadCount; i++)
 		{
-			for (unsigned int j = 0; j * splitValue < maxProgramMemUse; j++)
-			{
-				if (algType == AlgorithmType::cppAlgorithm)
-				{
-					//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j+ splitValue));
-				}
-				else
-				{
-					//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j+ splitValue));
-				};
-			}
-			//threadVector.push_back(move(t));
+			wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize);
 
 		}
+
 		algOnlyTimer.resume();
 		for (std::thread& th : threadVector)
 		{
 			th.join();
 		}
 		algOnlyTimer.pause();
-		outStream.write(arrToSplit, maxProgramMemUse);
+		outStream.write(arrToSplit, processedSize);
 		delete[] arrToSplit;
-		remainingFileSize -= maxProgramMemUse;
+		remainingFileSize -= processedSize;
 	}
-	
+
 	//Now we process the rest of the pixel array
 	char* arrToSplit = new char[remainingFileSize];
 	fileStream.read(arrToSplit, remainingFileSize);
-	DWORDLONG extra = remainingFileSize % threadCount;
-
 	DWORDLONG splitValue = remainingFileSize / threadCount;
-
 	std::vector<std::thread> threadVector;
 
-	for (unsigned int i = 0; i < threadCount; i++)
+	long rowsPerThread = std::floor(remainingFileSize / (rowSize * threadCount));
+	long extra = remainingFileSize - (rowsPerThread * threadCount * rowSize);
+	for (long i = 0; i < threadCount; i++)
 	{
-		
-		for (unsigned int j = 0; j * splitValue < maxProgramMemUse; j++)
+		if (i + 1 > threadCount)
 		{
-			int k = j * splitValue;
-			if (algType == AlgorithmType::cppAlgorithm)
-			{
-				if (k > maxProgramMemUse)
-				{
-					//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
-				}
-				else
-				{
-					//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j + splitValue));
-				}
-			}
-			else
-			{
-				if (k > maxProgramMemUse)
-				{
-					//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
-				}
-				else
-				{
-					
-					//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j + splitValue + extra));
-					
-				}
-				
-			}
-			//threadVector.push_back(move(t));
+			wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize);
 		}
-
+		else
+		{
+			wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize);
+		}
 	}
 	algOnlyTimer.resume();
 
@@ -197,20 +167,78 @@ bool BMPEditor::isEnoughDiskSpace()
 	else return true;
 }
 
+void BMPEditor::wipEditor(char* begin, char* end, long biWidth)
+{
+#if 0
+	char* currPos = begin;
+	while (currPos + 2 != end)
+	{
+		float R = *(currPos);
+		float G = *(currPos + 1);
+		float B = *(currPos + 2);
+		uint8_t Res = R * 0.299 + G * 0.587 + B * 0.144;
+		if (Res > 256 * 0.6)
+		{
+			*(currPos) = 255;
+			*(currPos + 1) = 255;
+			*(currPos + 2) = 255;
+		}
+		else
+		{
+			*(currPos) = 0;
+			*(currPos + 1) = 0;
+			*(currPos + 2) = 0;
+		}
+		currPos += 3;
+	}
+#endif
+	char* currPos = begin;
+	long currByteLoc = 0;
+	while (currPos < end)
+	{
+		float R = *(currPos);
+		float G = *(currPos + 1);
+		float B = *(currPos + 2);
+		uint8_t Res = R * 0.299 + G * 0.587 + B * 0.144;
+		if (Res > 256 * 0.6)
+		{
+			*(currPos) = 255;
+			*(currPos + 1) = 255;
+			*(currPos + 2) = 255;
+		}
+		else
+		{
+			*(currPos) = 0;
+			*(currPos + 1) = 0;
+			*(currPos + 2) = 0;
+		}
+		if(currByteLoc + 3 > biWidth)
+		{
+			currPos += (biWidth - currByteLoc);
+			currByteLoc = 0;
+		}
+		else
+		{
+			currByteLoc += 3;
+			currPos += 3;
+		}
+	}
+}
+
 std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCount)
 {
 	//Stream initialization
 	std::ifstream fileStream(sourceFilename, std::ios::binary);
 	std::ofstream outStream(destinationFilename, std::ios::binary);
-	
+
 	totalTimer.start();
 
-	
-	if(!fileStream.is_open())
+
+	if (!fileStream.is_open())
 	{
 		return std::string("File not found");
 	}
-	if(!isEnoughDiskSpace())
+	if (!isEnoughDiskSpace())
 	{
 		return std::string("Not enough disk space on selected destination!");
 	}
@@ -230,8 +258,8 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 
 	//Runs main algorithm
 	algorithmParallelRunner(maxProgramMemUse, fileStream, outStream, threadCount, algType);
-	
-	
+
+
 	//TODO
 	//Add full copy of anything between ios::begin and fileHeader.bfOffBits to output file									+
 	//Add disk avaliable space test/warning																					+
@@ -251,7 +279,7 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	//outstream to the rest of file
 	fileStream.close();
 	outStream.close();
-	
+
 	totalTimer.stop();
 	std::string totalTimerResult(std::to_string(totalTimer.getCounterTotalTicks()));
 	std::string algOnlyTimeResult(std::to_string(algOnlyTimer.getCounterTotalTicks()));

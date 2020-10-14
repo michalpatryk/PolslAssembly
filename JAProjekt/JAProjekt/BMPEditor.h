@@ -41,6 +41,9 @@ class BMPEditor
 	void algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
 		unsigned int threadCount, AlgorithmType algType);
 	bool isEnoughDiskSpace();
+
+	void wipEditor(char* begin, char* end, long biWidth);
+	
 public:
 	BMPEditor() {};
 	void setSourceFilename(std::string file) { sourceFilename = file; };
