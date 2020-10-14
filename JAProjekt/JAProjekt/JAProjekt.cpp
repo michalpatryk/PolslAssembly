@@ -20,8 +20,6 @@ void JAProjekt::on_loadFileButton_clicked()
 	{
         ui.sourceLocationLabel->setText(fileName);
         bmpEditor.setSourceFilename(fileName.toStdString());
-        ui.asmAlgButton->setEnabled(true);
-        ui.cppAlgButton->setEnabled(true);
         ui.saveFileButton->setEnabled(true);
 	}
     
@@ -43,7 +41,9 @@ void JAProjekt::on_saveFileButton_clicked()
         tr("Save Image"), "/home/jana", tr("Image Files (*.bmp);;All Files (*)"));
     if (!fileName.isEmpty())
     {
-        ui.sourceLocationLabel->setText(fileName);
+        ui.destinationSourceLabel->setText(fileName);
         bmpEditor.setDestinationFilename(fileName.toStdString());
+        ui.asmAlgButton->setEnabled(true);
+        ui.cppAlgButton->setEnabled(true);
     }
 }

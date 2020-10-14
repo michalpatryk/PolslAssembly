@@ -91,6 +91,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="PerformanceTimer.cpp" />
     <QtRcc Include="JAProjekt.qrc" />
     <QtUic Include="JAProjekt.ui" />
     <QtMoc Include="JAProjekt.h" />
@@ -100,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BMPEditor.h" />
+    <ClInclude Include="PerformanceTimer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
