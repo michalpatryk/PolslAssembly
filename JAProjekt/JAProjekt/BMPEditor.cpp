@@ -60,6 +60,7 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	unsigned int threadCount, AlgorithmType algType)
 {
 	fileStream.seekg(fileHeader.bfOffBits, std::ios::beg);
+	outStream.seekp(fileHeader.bfOffBits);
 	maxProgramMemUse = maxProgramMemUse - (maxProgramMemUse % threadCount);
 	DWORD remainingFileSize = fileHeader.bfSize;
 
@@ -89,7 +90,7 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 		{
 			th.join();
 		}
-		//outStream.write(arrToSplit, maxProgramMemUse);
+		outStream.write(arrToSplit, maxProgramMemUse);
 		delete[] arrToSplit;
 		remainingFileSize -= maxProgramMemUse;
 	}
@@ -133,7 +134,7 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 		th.join();
 	}
 	//
-	//outStream.write(arrToSplit, maxProgramMemUse + extra);
+	outStream.write(arrToSplit, remainingFileSize);
 	delete[] arrToSplit;
 }
 
@@ -212,10 +213,10 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	//	Add chunk read																										+
 	//	Add chunk division																									+
 	//	Add divided chunk process (by dll)														lowest priority->			X
-	//	Add processed chunk save																							X <- priority
+	//	Add processed chunk save																							+
 	//Add last chunk read																									+
 	//Add last divided chunk process (by dll)																				+
-	//Add last chunk save																									X <- priority
+	//Add last chunk save																									+
 	//	--QueryPerformanceCounter-- END																	low priority->		X
 	//	Add extra timer - without file reads/writes													very low priority->		X
 	
