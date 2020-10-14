@@ -63,7 +63,8 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	outStream.seekp(fileHeader.bfOffBits);
 	maxProgramMemUse = maxProgramMemUse - (maxProgramMemUse % threadCount);
 	DWORD remainingFileSize = fileHeader.bfSize;
-
+	algOnlyTimer.start();
+	algOnlyTimer.pause();
 	//Main alg loop
 	while (maxProgramMemUse < remainingFileSize)
 	{
@@ -73,6 +74,7 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 		DWORDLONG splitValue = maxProgramMemUse / threadCount;
 
 		std::vector<std::thread> threadVector;
+		
 		for (unsigned int i = 0; i < threadCount; i++)
 		{
 			for (unsigned int j = 0; j * splitValue < maxProgramMemUse; j++)
@@ -81,15 +83,20 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 				{
 					//std::thread t(RUNCPPALG(arrToSplit + j, arrToSplit + j+ splitValue));
 				}
-				//else { std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j+ splitValue)); };
+				else
+				{
+					//std::thread t(RUNASMALG(arrToSplit + j, arrToSplit + j+ splitValue));
+				};
 			}
 			//threadVector.push_back(move(t));
 
 		}
+		algOnlyTimer.resume();
 		for (std::thread& th : threadVector)
 		{
 			th.join();
 		}
+		algOnlyTimer.pause();
 		outStream.write(arrToSplit, maxProgramMemUse);
 		delete[] arrToSplit;
 		remainingFileSize -= maxProgramMemUse;
@@ -103,8 +110,10 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	DWORDLONG splitValue = remainingFileSize / threadCount;
 
 	std::vector<std::thread> threadVector;
+
 	for (unsigned int i = 0; i < threadCount; i++)
 	{
+		
 		for (unsigned int j = 0; j * splitValue < maxProgramMemUse; j++)
 		{
 			int k = j * splitValue;
@@ -129,11 +138,12 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 		}
 
 	}
+	algOnlyTimer.resume();
 	for (std::thread& th : threadVector)
 	{
 		th.join();
 	}
-	//
+	algOnlyTimer.stop();
 	outStream.write(arrToSplit, remainingFileSize);
 	delete[] arrToSplit;
 }
@@ -180,11 +190,7 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	std::ifstream fileStream(sourceFilename, std::ios::binary);
 	std::ofstream outStream(destinationFilename, std::ios::binary);
 	
-	LARGE_INTEGER li;
-	QueryPerformanceFrequency(&li);	//gets frequency of the performance counter
-	__int64 frequency = li.QuadPart;
-	QueryPerformanceCounter(&li);	//gets current value of frequency timer
-	__int64 CounterStart = li.QuadPart;
+	totalTimer.start();
 
 	
 	if(!fileStream.is_open())
@@ -216,7 +222,7 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	//TODO
 	//Add full copy of anything between ios::begin and fileHeader.bfOffBits to output file									+
 	//Add disk avaliable space test/warning																					+
-	//	--QueryPerformanceCounter-- START																low priority->		X
+	//	--QueryPerformanceCounter-- START																					+
 	//All bellow in while ifstream+chunkSize > ios::end																		X
 	//	Add chunk read																										+
 	//	Add chunk division																									+
@@ -225,13 +231,17 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	//Add last chunk read																									+
 	//Add last divided chunk process (by dll)																				+
 	//Add last chunk save																									+
-	//	--QueryPerformanceCounter-- END																	low priority->		X
-	//	Add extra timer - without file reads/writes													very low priority->		X
-	QueryPerformanceCounter(&li);
-	__int64 CounterEnd = li.QuadPart;
+	//	--QueryPerformanceCounter-- END																						+
+	//	Add extra timer - without file reads/writes																			+
+
 	//TODO
 	//outstream to the rest of file
 	fileStream.close();
 	outStream.close();
-	return std::string();
+	
+	totalTimer.stop();
+	std::string totalTimerResult(std::to_string(totalTimer.getCounterTotalTicks()));
+	std::string algOnlyTimeResult(std::to_string(algOnlyTimer.getCounterTotalTicks()));
+	std::string returnString = totalTimerResult + "\n" + algOnlyTimeResult;
+	return returnString;
 }

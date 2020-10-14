@@ -1,8 +1,10 @@
 #pragma once
+#define NOMINMAX
+#include "PerformanceTimer.h"
 #include <fstream>
 #include <optional>
 #include <string>
-#define NOMINMAX
+
 #include <Windows.h>
 #include <wingdi.h>
 enum class AlgorithmType
@@ -29,6 +31,10 @@ class BMPEditor
 	LONG biWidth;
 	LONG biHeight;
 	MEMORYSTATUSEX statex;
+	
+	PerformanceTimer totalTimer;
+	PerformanceTimer algOnlyTimer;
+	
 	std::optional<std::string> headerParser(std::ifstream& fileStream);
 	void headerRewriter(std::ifstream& fileStream, std::ofstream& outStream);
 	void getMemoryStatus();
@@ -40,7 +46,5 @@ public:
 	void setSourceFilename(std::string file) { sourceFilename = file; };
 	void setDestinationFilename(std::string file) { destinationFilename = file; };
 	std::string runAlgorithm(AlgorithmType algType, unsigned int threadCount);
-private:
-	
 };
 

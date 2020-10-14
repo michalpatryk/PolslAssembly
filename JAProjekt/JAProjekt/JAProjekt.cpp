@@ -27,12 +27,14 @@ void JAProjekt::on_loadFileButton_clicked()
 
 void JAProjekt::on_cppAlgButton_clicked()
 {
-    bmpEditor.runAlgorithm(AlgorithmType::cppAlgorithm, ui.coreHorizontalSlider->value());
+    std::string toBeParsed = bmpEditor.runAlgorithm(AlgorithmType::cppAlgorithm, ui.coreHorizontalSlider->value());
+    ui.cppAlglabel->setText(QString::fromStdString(toBeParsed));
 }
 
 void JAProjekt::on_asmAlgButton_clicked()
 {
-    bmpEditor.runAlgorithm(AlgorithmType::asmAlgorithm, ui.coreHorizontalSlider->value());
+    std::string toBeParsed = bmpEditor.runAlgorithm(AlgorithmType::asmAlgorithm, ui.coreHorizontalSlider->value());
+    ui.cppAlglabel->setText(QString::fromStdString(toBeParsed));
 }
 
 void JAProjekt::on_saveFileButton_clicked()
