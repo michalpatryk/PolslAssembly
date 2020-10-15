@@ -22,6 +22,7 @@ std::optional <std::string> BMPEditor::headerParser(std::ifstream& fileStream)
 		biSize = v1header.biSize;
 		biWidth = v1header.biWidth;
 		biHeight = v1header.biHeight;
+		headerType = HeaderType::v1;
 		break;
 	}
 	case(124):
@@ -30,6 +31,7 @@ std::optional <std::string> BMPEditor::headerParser(std::ifstream& fileStream)
 		biSize = v5Header.bV5Size;
 		biWidth = v5Header.bV5Width;
 		biHeight = v5Header.bV5Height;
+		headerType = HeaderType::v5;
 		break;
 	}
 	default:
@@ -73,12 +75,12 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	fileStream.seekg(fileHeader.bfOffBits, std::ios::beg);
 	outStream.seekp(fileHeader.bfOffBits);
 	maxProgramMemUse = maxProgramMemUse - (maxProgramMemUse % threadCount);
-	DWORD remainingFileSize = fileHeader.bfSize;
+	long rowSize = std::ceil((float)(24 * biWidth) / 32.0) * 4;
+	DWORD remainingFileSize = biHeight * rowSize;
 	algOnlyTimer.start();
 	algOnlyTimer.pause();
 
-	//calculate bytes per row
-	long rowSize = std::ceil((float)(24 * biWidth) / 32.0) * 4;
+	
 	//we are assuming, that we have enough memory to store rowSize*threadCount
 
 	//Main alg loop
@@ -118,9 +120,28 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	long extra = remainingFileSize - (rowsPerThread * threadCount * rowSize);
 	for (long i = 0; i < threadCount; i++)
 	{
-		if (i + 1 > threadCount)
+		if (i + 1 == threadCount)
 		{
-			
+			if (algType == AlgorithmType::cppAlgorithm)
+			{
+				std::thread t1(cppBinarization1,
+					(arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra),
+					rowSize,
+					0.2
+				);
+				threadVector.push_back(std::move(t1));
+			}
+			else
+			{	//TODO change to asm
+				std::thread t1(cppBinarization1,
+					(arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
+					rowSize,
+					0.2
+				);
+				threadVector.push_back(std::move(t1));
+			}
 			//std::thread t1(cppBinarization1, std::ref(arrToSplit + (i * rowsPerThread * rowSize)), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize, 0.2);
 			//cppBinarization1(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize, 0.2);
 			//wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize, 0.2);
@@ -128,27 +149,35 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 		}
 		else
 		{
-			//std::thread t1(f1, 2);
-			std::thread t1(cppBinarization1, 
-				arrToSplit + (i * rowsPerThread * rowSize), 
-				arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, 
-				rowSize, 
-				0.2
-			);
-			t1.join();
+			if(algType == AlgorithmType::cppAlgorithm)
+			{
+				std::thread t1(cppBinarization1,
+					(arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
+					rowSize,
+					0.2
+				);
+				threadVector.push_back(std::move(t1));
+			}
+			else
+			{	//TODO change to asm
+				std::thread t1(cppBinarization1,
+					(arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
+					rowSize,
+					0.2
+				);
+				threadVector.push_back(std::move(t1));
+			}
 			//cppBinarization1(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);
 			//wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);
-			//threadVector.push_back(std::move(t1));
-			//threadVector[i].join();
-			
 		}
-		
 	}
 	algOnlyTimer.resume();
 
 	for (std::thread& th : threadVector)
 	{
-		//th.join();
+		th.join();
 	}
 	algOnlyTimer.stop();
 	outStream.write(arrToSplit, remainingFileSize);

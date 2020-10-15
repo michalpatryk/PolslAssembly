@@ -11,6 +11,10 @@ enum class AlgorithmType
 {
 	cppAlgorithm, asmAlgorithm
 };
+enum class HeaderType
+{
+	v1, v5
+};
 
 
 class BMPEditor
@@ -18,7 +22,8 @@ class BMPEditor
 	
 	std::string sourceFilename;
 	std::string destinationFilename;
-	
+
+	HeaderType headerType;
 	BITMAPFILEHEADER fileHeader;
 		/*WORD  bfType;
 		DWORD bfSize;
