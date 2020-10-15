@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JAProjekt", "JAProjekt\JAPr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JAProjektCppLibrary", "JAProjektCppLibrary\JAProjektCppLibrary.vcxproj", "{D03A3A4C-4144-45D9-8DA1-9AF1E78B337A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JAProjektAsmLibrary", "JAProjektAsmLibrary\JAProjektAsmLibrary.vcxproj", "{116D7A97-3FC3-499F-9DA2-1E2B0F0E955C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -29,6 +31,14 @@ Global
 		{D03A3A4C-4144-45D9-8DA1-9AF1E78B337A}.Release|x64.Build.0 = Release|x64
 		{D03A3A4C-4144-45D9-8DA1-9AF1E78B337A}.Release|x86.ActiveCfg = Release|Win32
 		{D03A3A4C-4144-45D9-8DA1-9AF1E78B337A}.Release|x86.Build.0 = Release|Win32
+		{116D7A97-3FC3-499F-9DA2-1E2B0F0E955C}.Debug|x64.ActiveCfg = Debug|x64
+		{116D7A97-3FC3-499F-9DA2-1E2B0F0E955C}.Debug|x64.Build.0 = Debug|x64
+		{116D7A97-3FC3-499F-9DA2-1E2B0F0E955C}.Debug|x86.ActiveCfg = Debug|Win32
+		{116D7A97-3FC3-499F-9DA2-1E2B0F0E955C}.Debug|x86.Build.0 = Debug|Win32
+		{116D7A97-3FC3-499F-9DA2-1E2B0F0E955C}.Release|x64.ActiveCfg = Release|x64
+		{116D7A97-3FC3-499F-9DA2-1E2B0F0E955C}.Release|x64.Build.0 = Release|x64
+		{116D7A97-3FC3-499F-9DA2-1E2B0F0E955C}.Release|x86.ActiveCfg = Release|Win32
+		{116D7A97-3FC3-499F-9DA2-1E2B0F0E955C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

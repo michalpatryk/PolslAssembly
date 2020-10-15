@@ -7,6 +7,7 @@
 
 #include "../JAProjektCppLibrary/JAProjektCppLibrary.h"
 
+
 std::optional <std::string> BMPEditor::headerParser(std::ifstream& fileStream)
 {
 	int b = testFunction(5);
