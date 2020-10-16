@@ -43,3 +43,8 @@ void cppBinarization1(char* begin, char* end, long biWidth, float treshold)
 		}
 	}
 }
+
+JAPROJEKTCPPLIBRARY_API void cppHistogram1(char* begin, char* end, long biWidth, unsigned long long R[255], unsigned long long G[255], unsigned long long B[255])
+{
+	
+}

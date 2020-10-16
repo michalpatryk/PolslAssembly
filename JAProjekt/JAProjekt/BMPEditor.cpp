@@ -58,7 +58,7 @@ void BMPEditor::getMemoryStatus()
 	statex.dwLength = sizeof(statex);
 	GlobalMemoryStatusEx(&statex);
 }
-void algorithmForLoop(unsigned int threadCount, AlgorithmType algType, char* arrToSplit, long rowsPerThread,
+void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType, char* arrToSplit, long rowsPerThread,
 	long rowSize, long extra, std::vector<std::thread>& threadVector)
 {
 	for (long i = 0; i < threadCount; i++)

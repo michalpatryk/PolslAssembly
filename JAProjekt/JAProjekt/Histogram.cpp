@@ -2,7 +2,7 @@
 
 #include <thread>
 #include <vector>
-
+extern "C" int _stdcall cppHistogram1(char* begin, char* end, long biWidth, unsigned long long R[255], unsigned long long G[255], unsigned long long B[255]);
 Histogram::Histogram(std::string destinationFilename, std::string sourceFilename, LONG biWidth, LONG biHeight, DWORD bfOffBits)
 {
 	this->destinationFilename = destinationFilename;
@@ -45,7 +45,28 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 
 		for (unsigned int i = 0; i < threadCount; i++)
 		{
-			//alg call
+			if (i + 1 == threadCount)
+			{
+				//HERE insert color calculations
+				/*std::thread t1(cppBinarization1,
+					(arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra),
+					rowSize,
+					0.2
+				);
+				threadVector.push_back(std::move(t1));*/
+
+			}
+			else
+			{
+				//std::thread t1(cppBinarization1,
+				//	(arrToSplit + (i * rowsPerThread * rowSize)),
+				//	(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
+				//	rowSize,
+				//	0.2
+				//);
+				//threadVector.push_back(std::move(t1));
+			}
 			
 		}
 		for (std::thread& th : threadVector)
@@ -71,7 +92,13 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 				0.2
 			);
 			threadVector.push_back(std::move(t1));*/
-
+			cppHistogram1(
+				arrToSplit + (i * rowsPerThread * rowSize),
+				arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra,
+				biWidth,
+				R,	G,	B
+			);
+			
 		}
 		else
 		{

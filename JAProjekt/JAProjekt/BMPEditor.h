@@ -5,6 +5,8 @@
 #include <fstream>
 #include <optional>
 #include <string>
+#include <thread>
+#include <vector>
 
 #include <Windows.h>
 #include <wingdi.h>
@@ -46,6 +48,8 @@ class BMPEditor
 	void getMemoryStatus();
 	void algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
 		unsigned int threadCount, AlgorithmType algType);
+	void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType, char* arrToSplit, long rowsPerThread,
+		long rowSize, long extra, std::vector<std::thread>& threadVector);
 	bool isEnoughDiskSpace();
 
 	void wipEditor(char* begin, char* end, long biWidth, float treshold);
