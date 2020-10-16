@@ -58,67 +58,9 @@ void BMPEditor::getMemoryStatus()
 	statex.dwLength = sizeof(statex);
 	GlobalMemoryStatusEx(&statex);
 }
-void f1(int n)
+void algorithmForLoop(unsigned int threadCount, AlgorithmType algType, char* arrToSplit, long rowsPerThread,
+	long rowSize, long extra, std::vector<std::thread>& threadVector)
 {
-	for (int i = 0; i < 5; ++i) {
-		std::cout << "Thread 1 executing\n";
-		++n;
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	}
-}
-//This function might look ugly, but it does it job well. Its a closed box that runs algorithms, nothing more.
-//Yes, it takes a lot of arguments - but it wouldn't change a thing if these were made global by class.
-//Yes, there is DRY - but its repeated only twice, and the second time it has some 'extras' - trying to make a special function
-//just to avoid it would only lead to bugs and little gain.
-void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
-	unsigned int threadCount, AlgorithmType algType)
-{
-	fileStream.seekg(fileHeader.bfOffBits, std::ios::beg);
-	outStream.seekp(fileHeader.bfOffBits);
-	maxProgramMemUse = maxProgramMemUse - (maxProgramMemUse % threadCount);
-	long rowSize = std::ceil((float)(24 * biWidth) / 32.0) * 4;
-	DWORD remainingFileSize = biHeight * rowSize;
-	algOnlyTimer.start();
-	algOnlyTimer.pause();
-
-	int test = asmBinarization1(4, 4);
-	//we are assuming, that we have enough memory to store rowSize*threadCount
-
-	//Main alg loop
-	while (maxProgramMemUse < remainingFileSize)
-	{
-		char* arrToSplit = new char[maxProgramMemUse];
-		fileStream.read(arrToSplit, maxProgramMemUse);
-		std::vector<std::thread> threadVector;
-
-		long rowsPerThread = std::floor(maxProgramMemUse / (rowSize * threadCount));
-		long processedSize = rowsPerThread * threadCount;
-
-		for (unsigned int i = 0; i < threadCount; i++)
-		{
-			wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 60);
-
-		}
-
-		algOnlyTimer.resume();
-		for (std::thread& th : threadVector)
-		{
-			th.join();
-		}
-		algOnlyTimer.pause();
-		outStream.write(arrToSplit, processedSize);
-		delete[] arrToSplit;
-		remainingFileSize -= processedSize;
-	}
-
-	//Now we process the rest of the pixel array
-	char* arrToSplit = new char[remainingFileSize];
-	fileStream.read(arrToSplit, remainingFileSize);
-	DWORDLONG splitValue = remainingFileSize / threadCount;
-	std::vector<std::thread> threadVector;
-
-	long rowsPerThread = std::floor(remainingFileSize / (rowSize * threadCount));
-	long extra = remainingFileSize - (rowsPerThread * threadCount * rowSize);
 	for (long i = 0; i < threadCount; i++)
 	{
 		if (i + 1 == threadCount)
@@ -150,7 +92,7 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 		}
 		else
 		{
-			if(algType == AlgorithmType::cppAlgorithm)
+			if (algType == AlgorithmType::cppAlgorithm)
 			{
 				std::thread t1(cppBinarization1,
 					(arrToSplit + (i * rowsPerThread * rowSize)),
@@ -174,6 +116,62 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 			//wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);
 		}
 	}
+}
+//This function might look ugly, but it does it job well. Its a closed box that runs algorithms, nothing more.
+//Yes, it takes a lot of arguments - but it wouldn't change a thing if these were made global by class.
+//Yes, there is DRY - but its repeated only twice, and the second time it has some 'extras' - trying to make a special function
+//just to avoid it would only lead to bugs and little gain.
+void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
+	unsigned int threadCount, AlgorithmType algType)
+{
+	fileStream.seekg(fileHeader.bfOffBits, std::ios::beg);
+	outStream.seekp(fileHeader.bfOffBits);
+	maxProgramMemUse = maxProgramMemUse - (maxProgramMemUse % threadCount);
+	long rowSize = std::ceil((float)(24 * biWidth) / 32.0) * 4;
+	DWORD remainingFileSize = biHeight * rowSize;
+	algOnlyTimer.start();
+	algOnlyTimer.pause();
+
+	int test = asmBinarization1(4, 4);
+	//we are assuming, that we have enough memory to store rowSize*threadCount
+
+	//Main alg loop
+	while (maxProgramMemUse < remainingFileSize)
+	{
+		char* arrToSplit = new char[maxProgramMemUse];
+		fileStream.read(arrToSplit, maxProgramMemUse);
+		std::vector<std::thread> threadVector;
+
+		long rowsPerThread = std::floor(maxProgramMemUse / (rowSize * threadCount));
+		long processedSize = rowsPerThread * threadCount;
+
+		/*for (unsigned int i = 0; i < threadCount; i++)
+		{
+			wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 60);
+
+		}*/
+		algorithmForLoop(threadCount, algType, arrToSplit, rowsPerThread, rowSize, 0, threadVector);
+		algOnlyTimer.resume();
+		for (std::thread& th : threadVector)
+		{
+			th.join();
+		}
+		algOnlyTimer.pause();
+		outStream.write(arrToSplit, processedSize);
+		delete[] arrToSplit;
+		remainingFileSize -= processedSize;
+	}
+
+	//Now we process the rest of the pixel array
+	char* arrToSplit = new char[remainingFileSize];
+	fileStream.read(arrToSplit, remainingFileSize);
+	DWORDLONG splitValue = remainingFileSize / threadCount;
+	std::vector<std::thread> threadVector;
+
+	long rowsPerThread = std::floor(remainingFileSize / (rowSize * threadCount));
+	long extra = remainingFileSize - (rowsPerThread * threadCount * rowSize);
+
+	algorithmForLoop(threadCount, algType, arrToSplit, rowsPerThread, rowSize, extra, threadVector);
 	algOnlyTimer.resume();
 
 	for (std::thread& th : threadVector)
