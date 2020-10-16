@@ -1,6 +1,7 @@
 #pragma once
 #define NOMINMAX
 #include "PerformanceTimer.h"
+#include "Histogram.h"
 #include <fstream>
 #include <optional>
 #include <string>

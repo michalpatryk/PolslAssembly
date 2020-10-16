@@ -6,7 +6,7 @@
 #include <thread>
 
 #include "../JAProjektCppLibrary/JAProjektCppLibrary.h"
-
+extern "C" int _stdcall asmBinarization1(DWORD x, DWORD y);
 
 std::optional <std::string> BMPEditor::headerParser(std::ifstream& fileStream)
 {
@@ -14,7 +14,7 @@ std::optional <std::string> BMPEditor::headerParser(std::ifstream& fileStream)
 	fileStream.read((char*)(&fileHeader), 14);		//We are loading Bitmap file header
 	DWORD headerSize;
 	fileStream.read((char*)(&headerSize), 4);//gets the size of the header
-
+	
 	switch (headerSize)
 	{
 	case(40):
@@ -81,7 +81,7 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	algOnlyTimer.start();
 	algOnlyTimer.pause();
 
-	
+	int test = asmBinarization1(4, 4);
 	//we are assuming, that we have enough memory to store rowSize*threadCount
 
 	//Main alg loop
@@ -288,23 +288,12 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	DWORDLONG maxProgramMemUse = memsize * 2 / 3;	//maximum 70% memory load
 
 	//Runs main algorithm
+	Histogram preEditHistogram(destinationFilename, sourceFilename, biWidth, biHeight, fileHeader.bfOffBits);
+	preEditHistogram.run("_histPre.bmp", maxProgramMemUse, threadCount);
 	algorithmParallelRunner(maxProgramMemUse, fileStream, outStream, threadCount, algType);
 
 
-	//TODO
-	//Add full copy of anything between ios::begin and fileHeader.bfOffBits to output file									+
-	//Add disk avaliable space test/warning																					+
-	//	--QueryPerformanceCounter-- START																					+
-	//All bellow in while ifstream+chunkSize > ios::end																		X
-	//	Add chunk read																										+
-	//	Add chunk division																									+
-	//	Add divided chunk process (by dll)														lowest priority->			X
-	//	Add processed chunk save																							+
-	//Add last chunk read																									+
-	//Add last divided chunk process (by dll)																				+
-	//Add last chunk save																									+
-	//	--QueryPerformanceCounter-- END																						+
-	//	Add extra timer - without file reads/writes																			+
+
 
 	//TODO
 	//outstream to the rest of file
