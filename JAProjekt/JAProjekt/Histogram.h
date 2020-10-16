@@ -10,11 +10,14 @@ class Histogram
 	LONG biWidth;
 	LONG  biHeight;
 	DWORD bfOffBits;
-	unsigned long long R[255] = {0};
-	unsigned long long G[255] = {0};
-	unsigned long long B[255] = {0};
+	unsigned long long* R = new unsigned long long[256]();;
+	unsigned long long* G = new unsigned long long[256]();
+	unsigned long long* B = new unsigned long long[256]();
 public:
+	Histogram() = delete;
 	Histogram(std::string destinationFilename, std::string sourceFilename, LONG biWidth, LONG biHeight, DWORD bfOffBits);
 	void run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned int threadCount);
+	//TODO add destructor. For now - mem leaks all the way!
+	~Histogram();
 };
 

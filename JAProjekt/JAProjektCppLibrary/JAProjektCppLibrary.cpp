@@ -44,7 +44,24 @@ void cppBinarization1(char* begin, char* end, long biWidth, float treshold)
 	}
 }
 
-JAPROJEKTCPPLIBRARY_API void cppHistogram1(char* begin, char* end, long biWidth, unsigned long long R[255], unsigned long long G[255], unsigned long long B[255])
+JAPROJEKTCPPLIBRARY_API void cppHistogram1(char* begin, char* end, long biWidth, unsigned long long* R, unsigned long long* G, unsigned long long* B)
 {
-	
+	char* currPos = begin;
+	long currByteLoc = 0;
+	while (currPos < end)
+	{
+		R[(BYTE)(*currPos)] += 1;
+		G[(BYTE)*(currPos + 1)] += 1;
+		B[(BYTE)*(currPos + 2)] += 1;
+		if (currByteLoc + 3 > biWidth)
+		{
+			currPos += (biWidth - currByteLoc);
+			currByteLoc = 0;
+		}
+		else
+		{
+			currByteLoc += 3;
+			currPos += 3;
+		}
+	}
 }
