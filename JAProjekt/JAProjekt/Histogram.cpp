@@ -1,6 +1,8 @@
 #include "Histogram.h"
 
 
+
+#include <algorithm>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -19,8 +21,8 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 	std::ifstream inFileStream(sourceFilename, std::ios::binary);
 	destinationFilename.append(endAppend);
 	std::ofstream outFileStream(destinationFilename);
-	BITMAPFILEHEADER fileHeader = { (WORD)("BM"), 14, 0, 0, 100 };
-	BITMAPCOREHEADER infoHeader = { 12,255,255,0,24 };
+	BITMAPFILEHEADER fileHeader = { 19778, 14, 0, 0, 100 };
+	BITMAPCOREHEADER infoHeader = { 12,256,256,0,24 };
 
 	outFileStream.write((char*)&fileHeader, 14);
 	outFileStream.write((char*)&infoHeader, 12);
@@ -32,7 +34,7 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 	DWORD remainingFileSize = biHeight * rowSize;
 
 
-	
+
 
 	DWORDLONG splitValue = remainingFileSize / threadCount;
 	std::vector<std::thread> threadVector;
@@ -71,7 +73,7 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 				//);
 				//threadVector.push_back(std::move(t1));
 			}
-			
+
 		}
 		for (std::thread& th : threadVector)
 		{
@@ -83,7 +85,7 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 
 	char* arrToSplit = new char[remainingFileSize];
 	inFileStream.read(arrToSplit, remainingFileSize);
-	
+
 	long extra = remainingFileSize - (rowsPerThread * threadCount * rowSize);
 	for (long i = 0; i < threadCount; i++)
 	{
@@ -103,7 +105,7 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 			//	rowSize,
 			//	R,	G,	B
 			//);
-			
+
 		}
 		else
 		{
@@ -114,13 +116,13 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 			//	0.2
 			//);
 			//threadVector.push_back(std::move(t1));
-			
+
 			cppHistogram1(
 				arrToSplit + (i * rowsPerThread * rowSize),
 				arrToSplit + ((i + 1) * rowsPerThread * rowSize),
 				rowSize,
 				R, G, B
-				);
+			);
 		}
 
 	}
@@ -130,6 +132,48 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 		th.join();
 	}
 	delete[] arrToSplit;
+
+
+	unsigned long long* histogramMaxArray = new unsigned long long[3];
+	histogramMaxArray[0] = *std::max_element(R, R + 255);
+	histogramMaxArray[1] = *std::max_element(G, G + 255);
+	histogramMaxArray[2] = *std::max_element(B, B + 255);
+	unsigned long long histogramMax = *std::max_element(histogramMaxArray, histogramMaxArray + 2);
+
+	delete[] histogramMaxArray;
+
+	const int arrToWriteWidth = 256;
+	const int arrToWriteHeight = 256;
+	unsigned long long inBetweenValue = (histogramMax / arrToWriteHeight) * 1.05;
+	char arrToWrite[arrToWriteHeight][arrToWriteWidth * 3];
+	for (int i = 0; i < arrToWriteHeight; i++)
+	{
+		for (int j = 0; j < arrToWriteWidth; j++)
+		{
+			if (R[j] > i * inBetweenValue && R[j] <= (i + 1) * inBetweenValue)
+			{
+				arrToWrite[i][j * 3 + 2] = 255;		//Red
+			}
+			else arrToWrite[i][j * 3 + 2] = 0;
+			if (G[j] > i * inBetweenValue && G[j] <= (i + 1) * inBetweenValue)
+			{
+				arrToWrite[i][j * 3 + 1] = 255;		//Green
+			}
+			else arrToWrite[i][j * 3 + 1] = 0;
+			if (B[j] > i * inBetweenValue && B[j] <= (i + 1) * inBetweenValue)
+			{
+				arrToWrite[i][j * 3 + 0] = 255;		//Blue
+			}
+			else arrToWrite[i][j * 3 + 0] = 0;
+			
+		}
+	}
+	outFileStream.seekp(100, std::ios::beg);
+	for(int i = 0; i < arrToWriteHeight; i++)
+	{
+		outFileStream.write(arrToWrite[i], arrToWriteWidth * 3);
+	}
+	
 	inFileStream.close();
 	outFileStream.close();
 }
