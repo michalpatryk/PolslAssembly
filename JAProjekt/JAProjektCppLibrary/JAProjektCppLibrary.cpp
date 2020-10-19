@@ -15,9 +15,9 @@ void cppBinarization1(char* begin, char* end, long biWidth, float treshold)
 	long currByteLoc = 0;
 	while (currPos < end)
 	{
-		float R = *(currPos);
+		float R = *(currPos + 2);
 		float G = *(currPos + 1);
-		float B = *(currPos + 2);
+		float B = *(currPos + 0);
 		uint8_t Res = R * 0.299 + G * 0.587 + B * 0.144;
 		if (Res > 256 * treshold)
 		{
@@ -50,9 +50,9 @@ JAPROJEKTCPPLIBRARY_API void cppHistogram1(char* begin, char* end, long biWidth,
 	long currByteLoc = 0;
 	while (currPos < end)
 	{
-		R[(BYTE)(*currPos)] += 1;
+		B[(BYTE)(*currPos)] += 1;
 		G[(BYTE)*(currPos + 1)] += 1;
-		B[(BYTE)*(currPos + 2)] += 1;
+		R[(BYTE)*(currPos + 2)] += 1;
 		if (currByteLoc + 3 > biWidth)
 		{
 			currPos += (biWidth - currByteLoc);

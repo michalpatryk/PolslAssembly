@@ -145,7 +145,7 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 	const int arrToWriteWidth = 256;
 	const int arrToWriteHeight = 256;
 	unsigned long long inBetweenValue = (histogramMax / arrToWriteHeight) * 1.05;
-	char arrToWrite[arrToWriteHeight][arrToWriteWidth * 3];
+	unsigned char arrToWrite[arrToWriteHeight][arrToWriteWidth * 3];
 	for (int i = 0; i < arrToWriteHeight; i++)
 	{
 		for (int j = 0; j < arrToWriteWidth; j++)
@@ -171,7 +171,7 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 	outFileStream.seekp(100, std::ios::beg);
 	for(int i = 0; i < arrToWriteHeight; i++)
 	{
-		outFileStream.write(arrToWrite[i], arrToWriteWidth * 3);
+		outFileStream.write((char*)arrToWrite[i], arrToWriteWidth * 3);
 	}
 	
 	inFileStream.close();

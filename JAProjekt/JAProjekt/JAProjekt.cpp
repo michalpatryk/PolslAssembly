@@ -34,7 +34,7 @@ void JAProjekt::on_cppAlgButton_clicked()
 void JAProjekt::on_asmAlgButton_clicked()
 {
     std::string toBeParsed = bmpEditor.runAlgorithm(AlgorithmType::asmAlgorithm, ui.coreHorizontalSlider->value());
-    ui.cppAlglabel->setText(QString::fromStdString(toBeParsed));
+    ui.asmAlglabel->setText(QString::fromStdString(toBeParsed));
 }
 
 void JAProjekt::on_saveFileButton_clicked()

@@ -6,7 +6,7 @@
 #include <thread>
 
 #include "../JAProjektCppLibrary/JAProjektCppLibrary.h"
-extern "C" int _stdcall asmBinarization1(DWORD x, DWORD y);
+extern "C" void _stdcall asmBinarization1(char* begin, char* end, long biwidth, float threshold);
 
 std::optional <std::string> BMPEditor::headerParser(std::ifstream& fileStream)
 {
@@ -77,9 +77,10 @@ void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType
 			}
 			else
 			{	//TODO change to asm
+				
 				std::thread t1(cppBinarization1,
 					(arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra),
 					rowSize,
 					0.2
 				);
@@ -104,6 +105,7 @@ void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType
 			}
 			else
 			{	//TODO change to asm
+				asmBinarization1(arrToSplit, (arrToSplit + ((i + 1) * rowsPerThread * rowSize)), rowSize, 0.2);
 				std::thread t1(cppBinarization1,
 					(arrToSplit + (i * rowsPerThread * rowSize)),
 					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
@@ -117,10 +119,7 @@ void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType
 		}
 	}
 }
-//This function might look ugly, but it does it job well. Its a closed box that runs algorithms, nothing more.
-//Yes, it takes a lot of arguments - but it wouldn't change a thing if these were made global by class.
-//Yes, there is DRY - but its repeated only twice, and the second time it has some 'extras' - trying to make a special function
-//just to avoid it would only lead to bugs and little gain.
+
 void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
 	unsigned int threadCount, AlgorithmType algType)
 {
@@ -132,7 +131,6 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	algOnlyTimer.start();
 	algOnlyTimer.pause();
 
-	int test = asmBinarization1(4, 4);
 	//we are assuming, that we have enough memory to store rowSize*threadCount
 
 	//Main alg loop
@@ -145,11 +143,6 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 		long rowsPerThread = std::floor(maxProgramMemUse / (rowSize * threadCount));
 		long processedSize = rowsPerThread * threadCount;
 
-		/*for (unsigned int i = 0; i < threadCount; i++)
-		{
-			wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 60);
-
-		}*/
 		algorithmForLoop(threadCount, algType, arrToSplit, rowsPerThread, rowSize, 0, threadVector);
 		algOnlyTimer.resume();
 		for (std::thread& th : threadVector)
