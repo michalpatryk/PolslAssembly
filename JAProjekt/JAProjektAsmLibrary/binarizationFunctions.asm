@@ -10,12 +10,24 @@
 ;else [R, G, B] = [0, 0, 0]
 
 ;Naming convention is asmBinarization{version number}
+
 .data
-;currentByteLoc DWORD 0
-; beginptr: QWORD, endptr: PTR BYTE, biWidth: QWORD, treshold: real4
-blueMult	REAL4	0.144
-greenMult	REAL4	0.587
-redMult		REAL4	0.299
+ALIGN 16
+; Data below is ordered in an order easy to multiply by mulps command
+blueCol				REAL4	0.0			; contains value of blue in pixel
+greenCol			REAL4	0.0			; contains value of green in pixel
+redCol				REAL4	0.0			; contains value of red in pixel
+fill1				REAL4	0.0			; fill to allign memory to use in mulps 
+blueMult			REAL4	0.144		; contains multiplier for blue in pixel
+greenMult			REAL4	0.587		; contains multiplier for green in pixel
+redMult				REAL4	0.299		; contains multiplier for red in pixel
+fill2				REAL4	0.0			; fill to allign memory to use in mulps 
+resultBlueMult		REAL4	0.0			; empty place to store result of mulps
+resultGreenMult		REAL4	0.0			; empty place to store result of mulps
+resultRedMult		REAL4	0.0			; empty place to store result of mulps
+fill3				REAL4	0.0			; fill to allign memory to use in mulps 
+const256			REAL4	256.0		; one byte
+
 .code 
 asmBinarization1 proc 
 ;rcx - pointer to the beginning of the array
@@ -37,7 +49,7 @@ asmBinarization1 proc
 	push rbp  ; Save address of previous stack frame
 	push rdi  ; Save register destination index
 	mov currByteLoc, 0	; Initialize currByteLoc with 0
-
+	mulss xmm3, const256	; multiply treshold by 256
 	movss treshold, xmm3	; move value of treshold to local variable treshold
 	
 
@@ -46,27 +58,48 @@ asmBinarization1 proc
 	cmp rax, rdx	; check if rax (current address + 3) is smaller than rdx (end address)
 	jg @endWhile
 @while:		; Beginning of the while loop
+
+
+
 	mov al, [rcx]			; load simngle byte of colour blue
 	movzx eax, al			; Zero extend al into eax
 	cvtsi2ss xmm0, eax		; Save value to float register
-	;PSLLD	 xmm0, 8
-	movss xmm1, blueMult	; insert blue multiplier value ro register
-
+	movss blueCol, xmm0
+	
+	xorps xmm0, xmm0	; zeroing xmm0 register
 	mov al, [rcx + 1]	; load simngle byte of colour green
-	movzx eax, al	; Zero extend al into eax
-	cvtsi2ss xmm2, eax	; Save value to float register
-	movss xmm3, greenMult	; insert green multiplier value ro register
+	movzx eax, al		; Zero extend al into eax
+	cvtsi2ss xmm0, eax	; Save value to float register
+	movss greenCol, xmm0; Save value to variable
 
+	xorps xmm0, xmm0	; zeroing xmm0 register
 	mov al, [rcx + 2]	; load simngle byte of colour red
-	movzx eax, al	; Zero extend al into eax
-	cvtsi2ss xmm4, eax	; Save value to float register
-	movss xmm5, greenMult	; insert red multiplier value ro register
+	movzx eax, al		; Zero extend al into eax
+	cvtsi2ss xmm0, eax	; Save value to float register
+	movss redCol, xmm0	; Save value to variable
 
-	xorps xmm6, xmm6	; set all bits to 0
-	xorpd xmm7, xmm7	; set all bits to 0
-
-
-
+	xorps xmm0, xmm0	; cleaning xmm0 register
+	xorps xmm1, xmm1	; cleaning xmm1 register
+	xorps xmm2, xmm2	; cleaning xmm2 register
+	
+	movaps xmm0, [blueCol]	; move memory location to xmm0
+	movss result, xmm0
+	movaps xmm1, [blueMult]	; move memory location to xmm1
+	vmulps	xmm2, xmm1, xmm0	; multiply 4 sp floats and store result in xmm2
+	haddps	xmm2, xmm2			; horizontal add	
+								; dest[127:96] = source[127:96] + source[95:64]
+								; dest[95:64] = source[63:32] + source[31:0]
+								; dest[63:32] = dest[127:96] + dest[95:64]
+								; dest[31:0] = dest[63:32] + dest[31:0]
+								; so we "merge" 127:0 of source to 63:32, and with
+								; next instruction we merge 63:0 to 31:0 and extract
+								; 31:0 with movss
+	haddps	xmm2, xmm2			; horizontal add
+	movss result, xmm2
+	; now check if result > treshold
+;	push xmm3
+	
+	;movss result, xmm2
 	;mov green, al
 	;mov al, [rcx+1]
 	;mov blue, al
@@ -75,6 +108,8 @@ asmBinarization1 proc
 
 @aboveTreshold:
 @belowTreshold:
+
+
 	; add red and blue move
 	mov eax, currByteLoc	; move currByteLoc to eax
 	add eax, 3				; add 3 to eax
