@@ -105,7 +105,8 @@ void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType
 			}
 			else
 			{	//TODO change to asm
-				asmBinarization1(arrToSplit, (arrToSplit + ((i + 1) * rowsPerThread * rowSize)), rowSize, 0.2);
+				asmBinarization1((arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)), rowSize, 0.2);
 				/*std::thread t1(cppBinarization1,
 					(arrToSplit + (i * rowsPerThread * rowSize)),
 					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),

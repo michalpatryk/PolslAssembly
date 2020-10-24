@@ -92,6 +92,7 @@ asmBinarization1 proc
 	;movss result, xmm0
 	movaps xmm1, [blueMult]	; move memory (blueMul, greenMul, redMul, fill1) location to xmm1
 	vmulps	xmm2, xmm1, xmm0	; multiply 4 sp floats and store result in xmm2
+	movaps [resultBlueMult], xmm2
 	haddps	xmm2, xmm2			; horizontal add	
 								; dest[127:96] = source[127:96] + source[95:64]
 								; dest[95:64] = source[63:32] + source[31:0]
@@ -102,9 +103,10 @@ asmBinarization1 proc
 								; 31:0 with movss
 	haddps	xmm2, xmm2			; horizontal add like the one above
 	movss result, xmm2
+	movss fill3, xmm3
 	; now check if result > treshold
 	comiss	xmm3, xmm2
-	jl @belowTreshold
+	jae @belowTreshold
 ;	push xmm3
 	;cmpss xmm3, xmm2, 1
 	;movss result, xmm2
