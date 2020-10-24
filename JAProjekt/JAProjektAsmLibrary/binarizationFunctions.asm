@@ -27,8 +27,14 @@ resultGreenMult		REAL4	0.0			; empty place to store result of mulps
 resultRedMult		REAL4	0.0			; empty place to store result of mulps
 fill3				REAL4	0.0			; fill to allign memory to use in mulps 
 const256			REAL4	256.0		; one byte
-
+const0Byte			BYTE	0
+const255Byte		BYTE	255
 .code 
+;add comment
+; parametry wejsciowe (i ich zakresy) nie sa sprawdzane
+; par wyj
+; uzywane rejestry - nie niszczy pozostalych rejestrow
+; zawsze zwracac 0 w eax
 asmBinarization1 proc 
 ;rcx - pointer to the beginning of the array
 ;rdx - pointer to the end of the array
@@ -60,31 +66,31 @@ asmBinarization1 proc
 @while:		; Beginning of the while loop
 
 
-
-	mov al, [rcx]			; load simngle byte of colour blue
-	movzx eax, al			; Zero extend al into eax
-	cvtsi2ss xmm0, eax		; Save value to float register
-	movss blueCol, xmm0
+	xorps xmm0, xmm0		; zeroing xmm0 register for safeguarding next operations
+	mov al, [rcx]			; load single byte of colour blue
+	movzx eax, al			; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
+	cvtsi2ss xmm0, eax		; Save value to float register to pass it to blueCol
+	movss blueCol, xmm0		; Save value to variable for future mulps (blueCol * blueMult)
 	
-	xorps xmm0, xmm0	; zeroing xmm0 register
-	mov al, [rcx + 1]	; load simngle byte of colour green
-	movzx eax, al		; Zero extend al into eax
-	cvtsi2ss xmm0, eax	; Save value to float register
-	movss greenCol, xmm0; Save value to variable
+	xorps xmm0, xmm0	; zeroing xmm0 register for safeguarding next operations
+	mov al, [rcx + 1]	; load single byte of colour green
+	movzx eax, al		; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
+	cvtsi2ss xmm0, eax	; Save value to float register to pass it to greenCol
+	movss greenCol, xmm0; Save value to variable for future mulps (greenCol * greenMult)
 
-	xorps xmm0, xmm0	; zeroing xmm0 register
-	mov al, [rcx + 2]	; load simngle byte of colour red
-	movzx eax, al		; Zero extend al into eax
-	cvtsi2ss xmm0, eax	; Save value to float register
-	movss redCol, xmm0	; Save value to variable
+	xorps xmm0, xmm0	; zeroing xmm0 register for safeguarding next operations
+	mov al, [rcx + 2]	; load single byte of colour red
+	movzx eax, al		; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
+	cvtsi2ss xmm0, eax	; Save value to float register to pass it to redCol
+	movss redCol, xmm0	; Save value to variable for future mulps (redCol * redMult)
 
-	xorps xmm0, xmm0	; cleaning xmm0 register
-	xorps xmm1, xmm1	; cleaning xmm1 register
-	xorps xmm2, xmm2	; cleaning xmm2 register
+	xorps xmm0, xmm0	; cleaning xmm0 register for safeguarding next operations
+	xorps xmm1, xmm1	; cleaning xmm1 register for safeguarding next operations
+	xorps xmm2, xmm2	; cleaning xmm2 register for safeguarding next operations
 	
-	movaps xmm0, [blueCol]	; move memory location to xmm0
-	movss result, xmm0
-	movaps xmm1, [blueMult]	; move memory location to xmm1
+	movaps xmm0, [blueCol]	; move memory (blueCol, greenCol, redCol, fill1) location to xmm0
+	;movss result, xmm0
+	movaps xmm1, [blueMult]	; move memory (blueMul, greenMul, redMul, fill1) location to xmm1
 	vmulps	xmm2, xmm1, xmm0	; multiply 4 sp floats and store result in xmm2
 	haddps	xmm2, xmm2			; horizontal add	
 								; dest[127:96] = source[127:96] + source[95:64]
@@ -94,11 +100,13 @@ asmBinarization1 proc
 								; so we "merge" 127:0 of source to 63:32, and with
 								; next instruction we merge 63:0 to 31:0 and extract
 								; 31:0 with movss
-	haddps	xmm2, xmm2			; horizontal add
+	haddps	xmm2, xmm2			; horizontal add like the one above
 	movss result, xmm2
 	; now check if result > treshold
+	comiss	xmm3, xmm2
+	jl @belowTreshold
 ;	push xmm3
-	
+	;cmpss xmm3, xmm2, 1
 	;movss result, xmm2
 	;mov green, al
 	;mov al, [rcx+1]
@@ -107,10 +115,19 @@ asmBinarization1 proc
 	;mov red, al
 
 @aboveTreshold:
+	mov al, 255
+	mov [rcx], al	
+	mov [rcx + 1], al	
+	mov [rcx + 2], al	
+	jmp @endOfRowCheck
 @belowTreshold:
-
-
+	mov al, 0
+	mov [rcx], al
+	mov [rcx + 1], al
+	mov [rcx + 2], al
+	jmp @endOfRowCheck
 	; add red and blue move
+@endOfRowCheck:
 	mov eax, currByteLoc	; move currByteLoc to eax
 	add eax, 3				; add 3 to eax
 	cmp eax, r8d			; check if eax (currByteLoc + 3) is greater than r8d (row width)
