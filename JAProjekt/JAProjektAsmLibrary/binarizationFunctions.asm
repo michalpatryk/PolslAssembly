@@ -79,36 +79,37 @@ asmBinarization1 proc
 	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
 	mov al, [rcx]				; load single byte of colour blue
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
-	cvtsi2ss xmm1, eax			; Convert dword from eax (color byte) to float, store it in xmm1 without changing upper three doublewords
+	cvtsi2ss xmm0, eax			; Convert dword from eax (color byte) to float, store it in xmm0 without changing upper three doublewords
 	; Now we will be slowly loading data to xmm1 register.
-	; Data in xmm1 register: 0 0 0 blue
-	pshufd xmm1, xmm1, 00000000b; blue blue blue blue
+	; Data in xmm0 register: 0 0 0 blue
+	; pshufd allows us to shuffle packed doublewords. aabbccdd(binary), or a_b_c_d(decimal) means that	dest[127:96] = source[(a..a+1 * 32)]
+																									;	dest[95:64] = source[(b..b+1 * 32)]
+																									;	dest[63:32] = source[(c..c+1 * 32)]
+																									;	dest[31:0] = source[(d..d+1 * 32)]
+	pshufd xmm0, xmm0, 00000000b; blue blue blue blue
 
-	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
 	mov al, [rcx + 1]			; load single byte of colour green
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
-	cvtsi2ss xmm1, eax			; Save value to float register to pass it to greenCol
-	
-	;movss xmm1, xmm0			; blue blue blue green
-	pshufd xmm1, xmm1, 11100000b; blue blue green green
+	cvtsi2ss xmm0, eax			; Save value to float register to pass it to greenCol
+	; Data in xmm0 register: blue blue blue green
 
-	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
+	pshufd xmm0, xmm0, 11100000b; blue blue green green
+
 	mov al, [rcx + 2]			; load single byte of colour red
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
-	cvtsi2ss xmm1, eax			; Save value to float register to pass it to redCol
-	
-	;movss xmm1, xmm0			; blue blue green red
-	pshufd xmm1, xmm1, 11000100b	; blue red green red
-	xorps xmm2, xmm2			; 0 0 0 0
-	movss xmm1, xmm2			; blue red green 0
-	pshufd xmm1, xmm1, 00100111b; 0 red green blue
+	cvtsi2ss xmm0, eax			; Save value to float register to pass it to redCol
+	; Data in xmm0 register: blue blue green red
+
+	pshufd xmm0, xmm0, 11000100b; blue red green red
+
+	xorps xmm2, xmm2			; zeroing xmm2 register so we can move 0 to xmm0[31..0]
+	movss xmm0, xmm2			; blue red green 0
+	pshufd xmm0, xmm0, 00100111b; 0 red green blue 
 	;Starting register cleaning
-	xorps xmm0, xmm0			; cleaning xmm0 register for safeguarding next operations
-								; we do not clean xmm1, because it contains 0 rgb data
+
 	xorps xmm2, xmm2			; cleaning xmm2 register for safeguarding next operations
 
-	movaps xmm0, xmm1			; move memory (0, red, green, blue) to xmm0
-	movaps xmm1, xmm4	; move memory (0, 0.298 (redMult), 0.587 (greenMult), 0.144 (blueMult)) location to xmm1
+	movaps xmm1, xmm4			; move memory (0, 0.298 (redMult), 0.587 (greenMult), 0.144 (blueMult)) location to xmm1
 	vmulps	xmm2, xmm1, xmm0	; multiply 4 sp floats and store result in xmm2
 	haddps	xmm2, xmm2			; horizontal add	
 								; dest[127:96] = source[127:96] + source[95:64]
@@ -163,5 +164,4 @@ asmBinarization1 proc
 	ret							; Return from function
 asmBinarization1 endp
 end
-	;char* begin, char* end, long biWidth, float treshold
 
