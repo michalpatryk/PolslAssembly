@@ -64,20 +64,8 @@ asmBinarization1 proc
 
 	push rbp					; Save address of previous stack frame
 	push rdi					; Save register destination index
-	push rsp
-
-	xorps xmm4, xmm4
-	xorps xmm5, xmm5
-	movss xmm4, blueMult
-	movss xmm5, xmm4
-	pshufd	xmm4, xmm4, 01010001b
-
-	movss xmm4, greenMult
-	movss xmm4, xmm5
-	movss xmm4, redMult
-
-	movss xmm5, xmm4
-
+	push rsp					; Save stack pointer
+	movaps xmm4, [blueMult]		; move data to xmm4 so we can save ourselves from multiple memory loading
 	mov currByteLoc, 0			; Initialize currByteLoc with 0
 	mulss xmm3, const256		; multiply treshold by 256
 	movss treshold, xmm3		; move value of treshold to local variable treshold
@@ -91,40 +79,37 @@ asmBinarization1 proc
 	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
 	mov al, [rcx]				; load single byte of colour blue
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
-	cvtsi2ss xmm0, eax			; Save value to float register to pass it to blueCol
-	;movss blueCol, xmm0		; Save value to variable for future mulps (blueCol * blueMult)
-	movss xmm1, xmm0			; 0 0 0 blue
+	cvtsi2ss xmm1, eax			; Convert dword from eax (color byte) to float, store it in xmm1 without changing upper three doublewords
+	; Now we will be slowly loading data to xmm1 register.
+	; Data in xmm1 register: 0 0 0 blue
 	pshufd xmm1, xmm1, 00000000b; blue blue blue blue
 
 	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
 	mov al, [rcx + 1]			; load single byte of colour green
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
-	cvtsi2ss xmm0, eax			; Save value to float register to pass it to greenCol
-	;movss greenCol, xmm0		; Save value to variable for future mulps (greenCol * greenMult)
-	movss xmm1, xmm0			; blue blue blue green
+	cvtsi2ss xmm1, eax			; Save value to float register to pass it to greenCol
+	
+	;movss xmm1, xmm0			; blue blue blue green
 	pshufd xmm1, xmm1, 11100000b; blue blue green green
 
 	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
 	mov al, [rcx + 2]			; load single byte of colour red
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
-	cvtsi2ss xmm0, eax			; Save value to float register to pass it to redCol
-	;movss redCol, xmm0			; Save value to variable for future mulps (redCol * redMult)
-	movss xmm1, xmm0			; blue blue green red
+	cvtsi2ss xmm1, eax			; Save value to float register to pass it to redCol
+	
+	;movss xmm1, xmm0			; blue blue green red
 	pshufd xmm1, xmm1, 11000100b	; blue red green red
 	xorps xmm2, xmm2			; 0 0 0 0
 	movss xmm1, xmm2			; blue red green 0
 	pshufd xmm1, xmm1, 00100111b; 0 red green blue
-
+	;Starting register cleaning
 	xorps xmm0, xmm0			; cleaning xmm0 register for safeguarding next operations
-	; we do not clean xmm1, because it contains 0 rgb data
+								; we do not clean xmm1, because it contains 0 rgb data
 	xorps xmm2, xmm2			; cleaning xmm2 register for safeguarding next operations
 
 	movaps xmm0, xmm1			; move memory (0, red, green, blue) to xmm0
-	;movss result, xmm0
-	movaps xmm1, [blueMult]		; move memory (0, 0.298 (redMult), 0.587 (greenMult), 0.144 (blueMult)) location to xmm1
+	movaps xmm1, xmm4	; move memory (0, 0.298 (redMult), 0.587 (greenMult), 0.144 (blueMult)) location to xmm1
 	vmulps	xmm2, xmm1, xmm0	; multiply 4 sp floats and store result in xmm2
-	;mov rax, [resultBlueMultLocal]
-	;movaps [resultBlueMult], xmm2
 	haddps	xmm2, xmm2			; horizontal add	
 								; dest[127:96] = source[127:96] + source[95:64]
 								; dest[95:64] = source[63:32] + source[31:0]
@@ -134,7 +119,6 @@ asmBinarization1 proc
 								; next instruction we merge 63:0 to 31:0 and extract
 								; 31:0 with movss
 	haddps	xmm2, xmm2			; horizontal add like the one above
-
 	comiss	xmm2, xmm3			; now check if result > treshold
 	jb @belowTreshold
 
@@ -172,7 +156,7 @@ asmBinarization1 proc
 	cmp rax, rdx				; check if rax (current address + 3) is smaller than rdx (end address) so we can continue the while loop
 	jl @while
 @endWhile:
-	pop rsp
+	pop rsp						; Return rsp from stack
 	pop rdi						; Return rdi from stack 
 	pop rbp						; Return rbp from stack
 	mov eax, 0					; Function always works
