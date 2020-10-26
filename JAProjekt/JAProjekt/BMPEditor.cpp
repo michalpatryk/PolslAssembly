@@ -113,21 +113,21 @@ void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType
 			}
 			else
 			{	
-			/*	std::thread t1(asmBinarization1,
+				std::thread t1(asmBinarization1,
 					(arrToSplit + (i * rowsPerThread * rowSize)),
 					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
 					rowSize,
 					treshold
-				);*/
-				asmBinarization1((arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)), rowSize, treshold);
+				);
+				/*asmBinarization1((arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)), rowSize, treshold);*/
 				/*std::thread t1(cppBinarization1,
 					(arrToSplit + (i * rowsPerThread * rowSize)),
 					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
 					rowSize,
 					0.2
 				);*/
-				//threadVector.push_back(std::move(t1));
+				threadVector.push_back(std::move(t1));
 			}
 			//cppBinarization1(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);
 			//wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);

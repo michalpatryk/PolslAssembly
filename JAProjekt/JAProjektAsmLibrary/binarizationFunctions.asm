@@ -92,39 +92,39 @@ asmBinarization1 proc
 	mov al, [rcx]				; load single byte of colour blue
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
 	cvtsi2ss xmm0, eax			; Save value to float register to pass it to blueCol
-	movss blueCol, xmm0			; Save value to variable for future mulps (blueCol * blueMult)
-	movss xmm4, xmm0			; 0 0 0 blue
-	pshufd xmm4, xmm4, 00000000b	;blue blue blue blue
+	;movss blueCol, xmm0		; Save value to variable for future mulps (blueCol * blueMult)
+	movss xmm1, xmm0			; 0 0 0 blue
+	pshufd xmm1, xmm1, 00000000b; blue blue blue blue
 
 	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
 	mov al, [rcx + 1]			; load single byte of colour green
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
 	cvtsi2ss xmm0, eax			; Save value to float register to pass it to greenCol
-	movss greenCol, xmm0		; Save value to variable for future mulps (greenCol * greenMult)
-	movss xmm4, xmm0			; blue blue blue green
-	pshufd xmm4, xmm4, 11100000b; blue blue green green
+	;movss greenCol, xmm0		; Save value to variable for future mulps (greenCol * greenMult)
+	movss xmm1, xmm0			; blue blue blue green
+	pshufd xmm1, xmm1, 11100000b; blue blue green green
 
 	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
 	mov al, [rcx + 2]			; load single byte of colour red
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
 	cvtsi2ss xmm0, eax			; Save value to float register to pass it to redCol
-	movss redCol, xmm0			; Save value to variable for future mulps (redCol * redMult)
-	movss xmm4, xmm0			; blue blue green red
-	pshufd	xmm4, xmm4, 11000100b	; blue red green red
-	movss xmm6, fill1
-	movss xmm4, xmm6			; blue red green 0
-	pshufd xmm4, xmm4, 00100111b	; 0 red green blue
+	;movss redCol, xmm0			; Save value to variable for future mulps (redCol * redMult)
+	movss xmm1, xmm0			; blue blue green red
+	pshufd xmm1, xmm1, 11000100b	; blue red green red
+	xorps xmm2, xmm2			; 0 0 0 0
+	movss xmm1, xmm2			; blue red green 0
+	pshufd xmm1, xmm1, 00100111b; 0 red green blue
 
 	xorps xmm0, xmm0			; cleaning xmm0 register for safeguarding next operations
-	xorps xmm1, xmm1			; cleaning xmm1 register for safeguarding next operations
+	; we do not clean xmm1, because it contains 0 rgb data
 	xorps xmm2, xmm2			; cleaning xmm2 register for safeguarding next operations
 
-	movaps xmm0, xmm4			; move memory (blueCol, greenCol, redCol, fill1) location to xmm0
+	movaps xmm0, xmm1			; move memory (0, red, green, blue) to xmm0
 	;movss result, xmm0
-	movaps xmm1, [blueMult]		; move memory (blueMul, greenMul, redMul, fill1) location to xmm1
+	movaps xmm1, [blueMult]		; move memory (0, 0.298 (redMult), 0.587 (greenMult), 0.144 (blueMult)) location to xmm1
 	vmulps	xmm2, xmm1, xmm0	; multiply 4 sp floats and store result in xmm2
 	;mov rax, [resultBlueMultLocal]
-	movaps [resultBlueMult], xmm2
+	;movaps [resultBlueMult], xmm2
 	haddps	xmm2, xmm2			; horizontal add	
 								; dest[127:96] = source[127:96] + source[95:64]
 								; dest[95:64] = source[63:32] + source[31:0]
