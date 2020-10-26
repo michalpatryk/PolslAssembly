@@ -38,13 +38,46 @@ asmBinarization1 proc
 ;rcx - pointer to the beginning of the array
 ;rdx - pointer to the end of the array
 ;r8d - value of row width
-;xmm3 - value of threshold
+;xmm3 - value of threshold]
+	ALIGN 16
 
-	LOCAL currByteLoc: DWORD	; local double word holding data about current row location
+	LOCAL blueColLocal: REAL4
+	LOCAL greenColLocal: REAL4
+	LOCAL redColLocal: REAL4
+	LOCAL fill1Local: REAL4
+	LOCAL resultBlueMultLocal: REAL4
+	LOCAL resultGreenMultLocal: REAL4
+	LOCAL resultRedMultLocal: REAL4
+	LOCAL fill3Local: REAL4
+	LOCAL currByteLoc: DWORD 	; local double word holding data about current row location
 	LOCAL treshold: REAL4		; local real4 holding data about cutoff treshold used by binarization filter
+	mov eax, blueCol
+	mov blueColLocal, eax
+	mov greenColLocal, eax
+	mov redColLocal, eax
+	mov fill1Local, eax
+	mov resultBlueMultLocal, eax
+	mov resultGreenMultLocal, eax
+	mov resultRedMultLocal, eax
+	mov fill3Local, eax
+	
 
 	push rbp					; Save address of previous stack frame
 	push rdi					; Save register destination index
+	push rsp
+
+	xorps xmm4, xmm4
+	xorps xmm5, xmm5
+	movss xmm4, blueMult
+	movss xmm5, xmm4
+	pshufd	xmm4, xmm4, 01010001b
+
+	movss xmm4, greenMult
+	movss xmm4, xmm5
+	movss xmm4, redMult
+
+	movss xmm5, xmm4
+
 	mov currByteLoc, 0			; Initialize currByteLoc with 0
 	mulss xmm3, const256		; multiply treshold by 256
 	movss treshold, xmm3		; move value of treshold to local variable treshold
@@ -60,27 +93,37 @@ asmBinarization1 proc
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
 	cvtsi2ss xmm0, eax			; Save value to float register to pass it to blueCol
 	movss blueCol, xmm0			; Save value to variable for future mulps (blueCol * blueMult)
-	
+	movss xmm4, xmm0			; 0 0 0 blue
+	pshufd xmm4, xmm4, 00000000b	;blue blue blue blue
+
 	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
 	mov al, [rcx + 1]			; load single byte of colour green
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
 	cvtsi2ss xmm0, eax			; Save value to float register to pass it to greenCol
 	movss greenCol, xmm0		; Save value to variable for future mulps (greenCol * greenMult)
+	movss xmm4, xmm0			; blue blue blue green
+	pshufd xmm4, xmm4, 11100000b; blue blue green green
 
 	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
 	mov al, [rcx + 2]			; load single byte of colour red
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
 	cvtsi2ss xmm0, eax			; Save value to float register to pass it to redCol
 	movss redCol, xmm0			; Save value to variable for future mulps (redCol * redMult)
+	movss xmm4, xmm0			; blue blue green red
+	pshufd	xmm4, xmm4, 11000100b	; blue red green red
+	movss xmm6, fill1
+	movss xmm4, xmm6			; blue red green 0
+	pshufd xmm4, xmm4, 00100111b	; 0 red green blue
 
 	xorps xmm0, xmm0			; cleaning xmm0 register for safeguarding next operations
 	xorps xmm1, xmm1			; cleaning xmm1 register for safeguarding next operations
 	xorps xmm2, xmm2			; cleaning xmm2 register for safeguarding next operations
-	
-	movaps xmm0, [blueCol]		; move memory (blueCol, greenCol, redCol, fill1) location to xmm0
+
+	movaps xmm0, xmm4			; move memory (blueCol, greenCol, redCol, fill1) location to xmm0
 	;movss result, xmm0
 	movaps xmm1, [blueMult]		; move memory (blueMul, greenMul, redMul, fill1) location to xmm1
 	vmulps	xmm2, xmm1, xmm0	; multiply 4 sp floats and store result in xmm2
+	;mov rax, [resultBlueMultLocal]
 	movaps [resultBlueMult], xmm2
 	haddps	xmm2, xmm2			; horizontal add	
 								; dest[127:96] = source[127:96] + source[95:64]
@@ -129,6 +172,7 @@ asmBinarization1 proc
 	cmp rax, rdx				; check if rax (current address + 3) is smaller than rdx (end address) so we can continue the while loop
 	jl @while
 @endWhile:
+	pop rsp
 	pop rdi						; Return rdi from stack 
 	pop rbp						; Return rbp from stack
 	mov eax, 0					; Function always works
