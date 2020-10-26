@@ -14,21 +14,11 @@
 .data
 ALIGN 16
 ; Data below is ordered in an order easy to multiply by mulps command
-blueCol				REAL4	0.0			; contains value of blue in pixel
-greenCol			REAL4	0.0			; contains value of green in pixel
-redCol				REAL4	0.0			; contains value of red in pixel
-fill1				REAL4	0.0			; fill to allign memory to use in mulps 
 blueMult			REAL4	0.144		; contains multiplier for blue in pixel
 greenMult			REAL4	0.587		; contains multiplier for green in pixel
 redMult				REAL4	0.299		; contains multiplier for red in pixel
 fill2				REAL4	0.0			; fill to allign memory to use in mulps 
-resultBlueMult		REAL4	0.0			; empty place to store result of mulps
-resultGreenMult		REAL4	0.0			; empty place to store result of mulps
-resultRedMult		REAL4	0.0			; empty place to store result of mulps
-fill3				REAL4	0.0			; fill to allign memory to use in mulps 
 const256			REAL4	256.0		; one byte
-const0Byte			BYTE	0			; constant byte of value 0
-const255Byte		BYTE	255			; constant byte of value 255
 .code 
 ; parametry wejsciowe (i ich zakresy) nie sa sprawdzane
 ; par wyjsciowe to zwrot 0 na eax, poniewaz funkcja zawsze sie wykona. Jedyna mozliwoscia na niewykonanie
@@ -39,28 +29,8 @@ asmBinarization1 proc
 ;rdx - pointer to the end of the array
 ;r8d - value of row width
 ;xmm3 - value of threshold]
-	ALIGN 16
-
-	LOCAL blueColLocal: REAL4
-	LOCAL greenColLocal: REAL4
-	LOCAL redColLocal: REAL4
-	LOCAL fill1Local: REAL4
-	LOCAL resultBlueMultLocal: REAL4
-	LOCAL resultGreenMultLocal: REAL4
-	LOCAL resultRedMultLocal: REAL4
-	LOCAL fill3Local: REAL4
 	LOCAL currByteLoc: DWORD 	; local double word holding data about current row location
 	LOCAL treshold: REAL4		; local real4 holding data about cutoff treshold used by binarization filter
-	mov eax, blueCol
-	mov blueColLocal, eax
-	mov greenColLocal, eax
-	mov redColLocal, eax
-	mov fill1Local, eax
-	mov resultBlueMultLocal, eax
-	mov resultGreenMultLocal, eax
-	mov resultRedMultLocal, eax
-	mov fill3Local, eax
-	
 
 	push rbp					; Save address of previous stack frame
 	push rdi					; Save register destination index
