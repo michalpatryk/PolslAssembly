@@ -1,20 +1,2 @@
 ﻿  BMPEditor.cpp
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.27.29110\include\type_traits(1607,98): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.27.29110\include\thread(39): message : see reference to function template instantiation 'void std::invoke<void(__cdecl *)(char *,char *,long,float),char*,char*,long,double>(_Callable &&,_Ty1 &&,char *&&,long &&,double &&) noexcept' being compiled
-          with
-          [
-              _Callable=void (__cdecl *)(char *,char *,long,float),
-              _Ty1=char *
-          ]
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.27.29110\include\thread(49): message : see reference to function template instantiation 'unsigned int std::thread::_Invoke<_Tuple,0,1,2,3,4>(void *) noexcept' being compiled
-          with
-          [
-              _Tuple=_Tuple
-          ]
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.27.29110\include\thread(55): message : see reference to function template instantiation 'unsigned int (__cdecl *std::thread::_Get_invoke<_Tuple,0,1,2,3,4>(std::integer_sequence<size_t,0,1,2,3,4>) noexcept)(void *) noexcept' being compiled
-C:\Users\michalpatryk\source\repos\PolslAssembly\JAProjekt\JAProjekt\BMPEditor.cpp(75): message : see reference to function template instantiation 'std::thread::thread<void(__cdecl &)(char *,char *,long,float),char*,char*,long&,double,0>(_Fn,char *&&,char *&&,long &,double &&)' being compiled
-          with
-          [
-              _Fn=void (__cdecl &)(char *,char *,long,float)
-          ]
   JAProjekt.vcxproj -> C:\Users\michalpatryk\source\repos\PolslAssembly\JAProjekt\x64\Debug\JAProjekt.exe

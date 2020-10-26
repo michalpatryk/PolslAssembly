@@ -27,70 +27,59 @@ resultGreenMult		REAL4	0.0			; empty place to store result of mulps
 resultRedMult		REAL4	0.0			; empty place to store result of mulps
 fill3				REAL4	0.0			; fill to allign memory to use in mulps 
 const256			REAL4	256.0		; one byte
-const0Byte			BYTE	0
-const255Byte		BYTE	255
+const0Byte			BYTE	0			; constant byte of value 0
+const255Byte		BYTE	255			; constant byte of value 255
 .code 
-;add comment
 ; parametry wejsciowe (i ich zakresy) nie sa sprawdzane
-; par wyj
+; par wyjsciowe to zwrot 0 na eax, poniewaz funkcja zawsze sie wykona. Jedyna mozliwoscia na niewykonanie
+; funkcji jest podanie zlych danych wejsciowych i wywolanie przerwania systemowego
 ; uzywane rejestry - nie niszczy pozostalych rejestrow
-; zawsze zwracac 0 w eax
 asmBinarization1 proc 
 ;rcx - pointer to the beginning of the array
 ;rdx - pointer to the end of the array
 ;r8d - value of row width
 ;xmm3 - value of threshold
-	;LOCAL beginptr: PTR BYTE	
-	;LOCAL endptr: PTR BYTE	
-	LOCAL currByteLoc: DWORD
-	;LOCAL biWidth: DWORD	
-	LOCAL treshold: REAL4
-	LOCAL red: BYTE
-	LOCAL fred: REAL4
-	LOCAL green: BYTE
-	LOCAL fgreen: REAL4
-	LOCAL blue: BYTE
-	LOCAL fblue: REAL4	
-	LOCAL result: REAL4
-	push rbp  ; Save address of previous stack frame
-	push rdi  ; Save register destination index
-	mov currByteLoc, 0	; Initialize currByteLoc with 0
-	mulss xmm3, const256	; multiply treshold by 256
-	movss treshold, xmm3	; move value of treshold to local variable treshold
-	
 
-	mov rax, rcx	; move rcx to rax
-	add rax, 3		; add 3 to rax
-	cmp rax, rdx	; check if rax (current address + 3) is smaller than rdx (end address)
+	LOCAL currByteLoc: DWORD	; local double word holding data about current row location
+	LOCAL treshold: REAL4		; local real4 holding data about cutoff treshold used by binarization filter
+
+	push rbp					; Save address of previous stack frame
+	push rdi					; Save register destination index
+	mov currByteLoc, 0			; Initialize currByteLoc with 0
+	mulss xmm3, const256		; multiply treshold by 256
+	movss treshold, xmm3		; move value of treshold to local variable treshold
+	mov rax, rcx				; move rcx to rax
+	add rax, 3					; add 3 to rax
+	cmp rax, rdx				; check if rax (current address + 3) is smaller than rdx (end address)
 	jg @endWhile
-@while:		; Beginning of the while loop
+@while:							; Beginning of the while loop
 
 
-	xorps xmm0, xmm0		; zeroing xmm0 register for safeguarding next operations
-	mov al, [rcx]			; load single byte of colour blue
-	movzx eax, al			; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
-	cvtsi2ss xmm0, eax		; Save value to float register to pass it to blueCol
-	movss blueCol, xmm0		; Save value to variable for future mulps (blueCol * blueMult)
+	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
+	mov al, [rcx]				; load single byte of colour blue
+	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
+	cvtsi2ss xmm0, eax			; Save value to float register to pass it to blueCol
+	movss blueCol, xmm0			; Save value to variable for future mulps (blueCol * blueMult)
 	
-	xorps xmm0, xmm0	; zeroing xmm0 register for safeguarding next operations
-	mov al, [rcx + 1]	; load single byte of colour green
-	movzx eax, al		; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
-	cvtsi2ss xmm0, eax	; Save value to float register to pass it to greenCol
-	movss greenCol, xmm0; Save value to variable for future mulps (greenCol * greenMult)
+	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
+	mov al, [rcx + 1]			; load single byte of colour green
+	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
+	cvtsi2ss xmm0, eax			; Save value to float register to pass it to greenCol
+	movss greenCol, xmm0		; Save value to variable for future mulps (greenCol * greenMult)
 
-	xorps xmm0, xmm0	; zeroing xmm0 register for safeguarding next operations
-	mov al, [rcx + 2]	; load single byte of colour red
-	movzx eax, al		; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
-	cvtsi2ss xmm0, eax	; Save value to float register to pass it to redCol
-	movss redCol, xmm0	; Save value to variable for future mulps (redCol * redMult)
+	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
+	mov al, [rcx + 2]			; load single byte of colour red
+	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
+	cvtsi2ss xmm0, eax			; Save value to float register to pass it to redCol
+	movss redCol, xmm0			; Save value to variable for future mulps (redCol * redMult)
 
-	xorps xmm0, xmm0	; cleaning xmm0 register for safeguarding next operations
-	xorps xmm1, xmm1	; cleaning xmm1 register for safeguarding next operations
-	xorps xmm2, xmm2	; cleaning xmm2 register for safeguarding next operations
+	xorps xmm0, xmm0			; cleaning xmm0 register for safeguarding next operations
+	xorps xmm1, xmm1			; cleaning xmm1 register for safeguarding next operations
+	xorps xmm2, xmm2			; cleaning xmm2 register for safeguarding next operations
 	
-	movaps xmm0, [blueCol]	; move memory (blueCol, greenCol, redCol, fill1) location to xmm0
+	movaps xmm0, [blueCol]		; move memory (blueCol, greenCol, redCol, fill1) location to xmm0
 	;movss result, xmm0
-	movaps xmm1, [blueMult]	; move memory (blueMul, greenMul, redMul, fill1) location to xmm1
+	movaps xmm1, [blueMult]		; move memory (blueMul, greenMul, redMul, fill1) location to xmm1
 	vmulps	xmm2, xmm1, xmm0	; multiply 4 sp floats and store result in xmm2
 	movaps [resultBlueMult], xmm2
 	haddps	xmm2, xmm2			; horizontal add	
@@ -102,75 +91,49 @@ asmBinarization1 proc
 								; next instruction we merge 63:0 to 31:0 and extract
 								; 31:0 with movss
 	haddps	xmm2, xmm2			; horizontal add like the one above
-	movss result, xmm2
-	movss fill3, xmm3
-	; now check if result > treshold
-	comiss	xmm3, xmm2
-	jae @belowTreshold
-;	push xmm3
-	;cmpss xmm3, xmm2, 1
-	;movss result, xmm2
-	;mov green, al
-	;mov al, [rcx+1]
-	;mov blue, al
-	;mov al, [rcx + 2]
-	;mov red, al
 
-@aboveTreshold:
-	mov al, 255
-	mov [rcx], al	
-	mov [rcx + 1], al	
-	mov [rcx + 2], al	
+	comiss	xmm2, xmm3			; now check if result > treshold
+	jb @belowTreshold
+
+@aboveTreshold:					; result of haddps is above treshold, so we place 255 in all 3 bytes
+	mov al, 255					; move 0xFF into al
+	mov [rcx], al				; move 0xFF into memory address of blue
+	mov [rcx + 1], al			; move 0xFF into memory address of green
+	mov [rcx + 2], al			; move 0xFF into memory address of red
 	jmp @endOfRowCheck
-@belowTreshold:
-	mov al, 0
-	mov [rcx], al
-	mov [rcx + 1], al
-	mov [rcx + 2], al
+@belowTreshold:					; result of haddps is below treshold, so we place 255 in all 3 bytes
+	mov al, 0					; move 0x00 into al
+	mov [rcx], al				; move 0x00 into memory address of blue
+	mov [rcx + 1], al			; move 0x00 into memory address of green
+	mov [rcx + 2], al			; move 0x00 into memory address of red
 	jmp @endOfRowCheck
-	; add red and blue move
 @endOfRowCheck:
-	mov eax, currByteLoc	; move currByteLoc to eax
-	add eax, 3				; add 3 to eax
-	cmp eax, r8d			; check if eax (currByteLoc + 3) is greater than r8d (row width)
+	mov eax, currByteLoc		; move currByteLoc to eax
+	add eax, 3					; add 3 to eax
+	cmp eax, r8d				; check if eax (currByteLoc + 3) is greater than r8d (row width)
 	jg @jumpToNewRow
 @continueCurrentRow:
-	add rcx, 3	; currPos += 3;
-	add currByteLoc, 3	; currByteLoc += 3;
+	add rcx, 3					; currPos += 3;
+	add currByteLoc, 3			; currByteLoc += 3;
 	jmp @checkWhile
 @jumpToNewRow:
-	mov r9d, r8d	; cast biWidth here
-	sub r9d, currByteLoc	;biWidth - currByteLoc
-	add rcx, r9	; currPos += (biWidth - currByteLoc);
-	mov currByteLoc, 0	; move 0 to currByteLoc
-	cmp rcx, rdx	; 
-	jge @checkWhile		; if previous condition returned greater or equal, jmp to @while
+	mov r9d, r8d				; cast biWidth (r8d) to r9d, so we can substract and add 
+	sub r9d, currByteLoc		; bitmapWidth (originaly r8d) - currByteLoc
+	add rcx, r9					; currPos (pixel pointer) += (biWidth - currByteLoc) <- we are doing this to skip padding
+	mov currByteLoc, 0			; move 0 to currByteLoc because we are at the beginning of the current row
+	cmp rcx, rdx				; check if we end our while loop (beginning pointer greater than end pointer)
+	jge @checkWhile				; if previous condition returned greater or equal, jmp to @while
 @checkWhile:
-	mov rax, rcx	; move rcx (current address) to rax
-	add rax, 3		; add 3 to rax
-	cmp rax, rdx	; check if rax (current address + 3) is smaller than rdx (end address)
+	mov rax, rcx				; move rcx (current address) to rax (temp unused register)
+	add rax, 3					; add 3 to rax
+	cmp rax, rdx				; check if rax (current address + 3) is smaller than rdx (end address) so we can continue the while loop
 	jl @while
 @endWhile:
-	pop rdi	; Return rdi from stack 
-	pop rbp	; Return rbp from stack
-	ret		; Return from function
+	pop rdi						; Return rdi from stack 
+	pop rbp						; Return rbp from stack
+	mov eax, 0					; Function always works
+	ret							; Return from function
 asmBinarization1 endp
 end
 	;char* begin, char* end, long biWidth, float treshold
 
-
-
-;	xor eax, eax
-;	mov eax, x
-;	mov ecx, y
-;	ror ecx, 1
-;	shld eax,ecx,2
-;	jnc ET1
-;	mul y
-;	ret
-;ET1: 
-;	mul x
-;	neg y
-;	ret
-	
-;asmBinarization1 endp

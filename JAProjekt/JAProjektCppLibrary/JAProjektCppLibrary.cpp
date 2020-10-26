@@ -15,9 +15,9 @@ void cppBinarization1(char* begin, char* end, long biWidth, float treshold)
 	long currByteLoc = 0;
 	while (currPos < end)
 	{
-		float R = *(currPos + 2);
-		float G = *(currPos + 1);
-		float B = *(currPos + 0);
+		float R = (unsigned char)*(currPos + 2);
+		float G = (unsigned char)*(currPos + 1);
+		float B = (unsigned char)*(currPos + 0);
 		uint8_t Res = R * 0.299 + G * 0.587 + B * 0.144;
 		if (Res > 256 * treshold)
 		{

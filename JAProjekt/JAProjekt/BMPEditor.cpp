@@ -61,6 +61,7 @@ void BMPEditor::getMemoryStatus()
 void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType, char* arrToSplit, long rowsPerThread,
 	long rowSize, long extra, std::vector<std::thread>& threadVector)
 {
+	float treshold = 0.3;
 	for (long i = 0; i < threadCount; i++)
 	{
 		if (i + 1 == threadCount)
@@ -71,19 +72,26 @@ void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType
 					(arrToSplit + (i * rowsPerThread * rowSize)),
 					(arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra),
 					rowSize,
-					0.2
+					treshold
 				);
 				threadVector.push_back(std::move(t1));
 			}
 			else
-			{	//TODO change to asm
-				
-				std::thread t1(cppBinarization1,
+			{	
+				std::thread t1(asmBinarization1,
+					(arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
+					rowSize,
+					treshold
+				);
+				/*asmBinarization1((arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)+extra), rowSize, treshold);*/
+				/*std::thread t1(cppBinarization1,
 					(arrToSplit + (i * rowsPerThread * rowSize)),
 					(arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra),
 					rowSize,
 					0.2
-				);
+				);*/
 				threadVector.push_back(std::move(t1));
 			}
 			//std::thread t1(cppBinarization1, std::ref(arrToSplit + (i * rowsPerThread * rowSize)), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize, 0.2);
@@ -99,21 +107,27 @@ void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType
 					(arrToSplit + (i * rowsPerThread * rowSize)),
 					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
 					rowSize,
-					0.2
+					treshold
 				);
 				threadVector.push_back(std::move(t1));
 			}
 			else
-			{	//TODO change to asm
-				asmBinarization1((arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)), rowSize, 0.2);
+			{	
+				std::thread t1(asmBinarization1,
+					(arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
+					rowSize,
+					treshold
+				);
+				/*asmBinarization1((arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)), rowSize, treshold);*/
 				/*std::thread t1(cppBinarization1,
 					(arrToSplit + (i * rowsPerThread * rowSize)),
 					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
 					rowSize,
 					0.2
-				);
-				threadVector.push_back(std::move(t1));*/
+				);*/
+				threadVector.push_back(std::move(t1));
 			}
 			//cppBinarization1(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);
 			//wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);
@@ -283,8 +297,8 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	Histogram preEditHistogram(destinationFilename, sourceFilename, biWidth, biHeight, fileHeader.bfOffBits);
 	preEditHistogram.run("_histPre.bmp", maxProgramMemUse, threadCount);
 	algorithmParallelRunner(maxProgramMemUse, fileStream, outStream, threadCount, algType);
-
-
+	Histogram postEditHistogram(destinationFilename, destinationFilename, biWidth, biHeight, fileHeader.bfOffBits);
+	postEditHistogram.run("_histPost.bmp", maxProgramMemUse, threadCount);
 
 
 	//TODO
