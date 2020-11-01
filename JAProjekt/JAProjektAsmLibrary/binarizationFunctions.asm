@@ -8,7 +8,8 @@
 ;result = R * 0.299 + G * 0.587 + B * 0.114
 ;if(result) > threshold [R,G,B] = [255, 255, 255]
 ;else [R, G, B] = [0, 0, 0]
-
+;v0.9 Algorithm is working for sequential execution
+;v0.9.8 Algorithm running for all data
 ;Naming convention is asmBinarization{version number}
 
 .data
@@ -44,8 +45,7 @@ asmBinarization1 proc
 	cmp rax, rdx				; check if rax (current address + 3) is smaller than rdx (end address)
 	jg @endWhile
 @while:							; Beginning of the while loop
-
-
+	; From now on used registers are: xmm0 (pixel color), eax (pixel color extraction), xmm2 (adding 0)
 	xorps xmm0, xmm0			; zeroing xmm0 register for safeguarding next operations
 	mov al, [rcx]				; load single byte of colour blue
 	movzx eax, al				; Zero extend al into eax so we can pass it into xmm0 for sp float conversion
@@ -74,9 +74,9 @@ asmBinarization1 proc
 
 	xorps xmm2, xmm2			; zeroing xmm2 register so we can move 0 to xmm0[31..0]
 	movss xmm0, xmm2			; blue red green 0
-	pshufd xmm0, xmm0, 00100111b; 0 red green blue 
-	;Starting register cleaning
-
+	pshufd xmm0, xmm0, 00100111b; 0 red green blue
+	
+	; From now on used registers are: xmm0 (pixel colors), xmm1 (pixel colors multipliers), xmm2 (pixel multiplication result and add)
 	xorps xmm2, xmm2			; cleaning xmm2 register for safeguarding next operations
 
 	movaps xmm1, xmm4			; move memory (0, 0.298 (redMult), 0.587 (greenMult), 0.144 (blueMult)) location to xmm1
