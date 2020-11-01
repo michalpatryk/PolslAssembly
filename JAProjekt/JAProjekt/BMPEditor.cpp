@@ -5,12 +5,10 @@
 #include <iostream>
 #include <thread>
 
-#include "../JAProjektCppLibrary/JAProjektCppLibrary.h"
-extern "C" void _stdcall asmBinarization1(char* begin, char* end, long biwidth, float threshold);
 
+typedef void(CALLBACK* BINARIZATIONPROC)(char* begin, char* end, long biWidth, float treshold);
 std::optional <std::string> BMPEditor::headerParser(std::ifstream& fileStream)
 {
-	int b = testFunction(5);
 	fileStream.read((char*)(&fileHeader), 14);		//We are loading Bitmap file header
 	DWORD headerSize;
 	fileStream.read((char*)(&headerSize), 4);//gets the size of the header
@@ -62,77 +60,59 @@ void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType
 	long rowSize, long extra, std::vector<std::thread>& threadVector)
 {
 	float treshold = 0.3;
-	for (long i = 0; i < threadCount; i++)
+	HINSTANCE hDLL;
+	BINARIZATIONPROC binprocPtr;
+	
+	if(algType == AlgorithmType::cppAlgorithm)
 	{
-		if (i + 1 == threadCount)
-		{
-			if (algType == AlgorithmType::cppAlgorithm)
-			{
-				std::thread t1(cppBinarization1,
-					(arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra),
-					rowSize,
-					treshold
-				);
-				threadVector.push_back(std::move(t1));
-			}
-			else
-			{	
-				std::thread t1(asmBinarization1,
-					(arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
-					rowSize,
-					treshold
-				);
-				/*asmBinarization1((arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)+extra), rowSize, treshold);*/
-				/*std::thread t1(cppBinarization1,
-					(arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra),
-					rowSize,
-					0.2
-				);*/
-				threadVector.push_back(std::move(t1));
-			}
-			//std::thread t1(cppBinarization1, std::ref(arrToSplit + (i * rowsPerThread * rowSize)), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize, 0.2);
-			//cppBinarization1(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize, 0.2);
-			//wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra, rowSize, 0.2);
-			//threadVector.push_back(std::move(t1));
-		}
-		else
-		{
-			if (algType == AlgorithmType::cppAlgorithm)
-			{
-				std::thread t1(cppBinarization1,
-					(arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
-					rowSize,
-					treshold
-				);
-				threadVector.push_back(std::move(t1));
-			}
-			else
-			{	
-				std::thread t1(asmBinarization1,
-					(arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
-					rowSize,
-					treshold
-				);
-				/*asmBinarization1((arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)), rowSize, treshold);*/
-				/*std::thread t1(cppBinarization1,
-					(arrToSplit + (i * rowsPerThread * rowSize)),
-					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
-					rowSize,
-					0.2
-				);*/
-				threadVector.push_back(std::move(t1));
-			}
-			//cppBinarization1(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);
-			//wipEditor(arrToSplit + (i * rowsPerThread * rowSize), arrToSplit + ((i + 1) * rowsPerThread * rowSize), rowSize, 0.2);
-		}
+		hDLL = LoadLibraryA("JAProjektCppLibrary");
 	}
+	else if (algType == AlgorithmType::asmAlgorithm)
+	{
+		hDLL = LoadLibraryA("JAProjektAsmLibrary");
+	}
+	if (hDLL != NULL)
+	{
+		if (algType == AlgorithmType::cppAlgorithm)
+		{
+			binprocPtr = (BINARIZATIONPROC)GetProcAddress(hDLL, "cppBinarization1");
+		}
+		else if (algType == AlgorithmType::asmAlgorithm)
+		{
+			binprocPtr = (BINARIZATIONPROC)GetProcAddress(hDLL, "asmBinarization1");
+		}
+		
+		if (NULL != binprocPtr)
+		{
+			for (long i = 0; i < threadCount; i++)
+			{
+				if (i + 1 == threadCount)
+				{
+					std::thread t1(binprocPtr,
+						(arrToSplit + (i * rowsPerThread * rowSize)),
+						(arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra),
+						rowSize,
+						treshold
+					);
+					threadVector.push_back(std::move(t1));
+				}
+				else
+				{
+					std::thread t1(binprocPtr,
+						(arrToSplit + (i * rowsPerThread * rowSize)),
+						(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
+						rowSize,
+						treshold
+					);
+					threadVector.push_back(std::move(t1));
+				}
+			}
+		}
+		else throw "Error loading DLL!";
+	}
+	else throw "DLL file not found!";
+	
+	
 }
 
 void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
