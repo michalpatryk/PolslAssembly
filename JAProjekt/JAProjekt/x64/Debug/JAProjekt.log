@@ -1,2 +1,13 @@
-﻿  BMPEditor.cpp
+﻿  Reading Qt configuration (C:/Programming/QT/5.15.1/msvc2019_64/bin/qmake)
+  uic JAProjekt.ui
+  rcc JAProjekt.qrc
+  moc JAProjekt.h
+   RCC: Warning: No resources in 'C:\Users\michalpatryk\source\repos\PolslAssembly\JAProjekt\JAProjekt\JAProjekt.qrc'.
+  Histogram.cpp
+  PerformanceTimer.cpp
+  BMPEditor.cpp
+  JAProjekt.cpp
+  main.cpp
+  qrc_JAProjekt.cpp
+  moc_JAProjekt.cpp
   JAProjekt.vcxproj -> C:\Users\michalpatryk\source\repos\PolslAssembly\JAProjekt\x64\Debug\JAProjekt.exe
