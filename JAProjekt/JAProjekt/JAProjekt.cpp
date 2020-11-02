@@ -11,9 +11,7 @@ JAProjekt::JAProjekt(QWidget *parent)
     ui.setupUi(this);
     unsigned int n = std::thread::hardware_concurrency();
     ui.coreHorizontalSlider->setValue(n);
-    ui.coreLabel->setText(QString::number(n));
-	
-    
+    ui.coreLabel->setText(QString::number(n));  
 }
 
 void JAProjekt::on_loadFileButton_clicked()
@@ -28,11 +26,11 @@ void JAProjekt::on_loadFileButton_clicked()
         ui.inputHistogramButton->setEnabled(false);
         ui.outputHistogramButton->setEnabled(false);
 	}
-    
 }
 
 void JAProjekt::on_cppAlgButton_clicked()
 {
+    bmpEditor.setTreshold(ui.tresholdHorizontalSlider->value()/100.0);
     std::string toBeParsed = bmpEditor.runAlgorithm(AlgorithmType::cppAlgorithm, ui.coreHorizontalSlider->value());
     ui.cppAlglabel->setText(QString::fromStdString(toBeParsed));
     ui.inputHistogramButton->setEnabled(true);
@@ -41,6 +39,7 @@ void JAProjekt::on_cppAlgButton_clicked()
 
 void JAProjekt::on_asmAlgButton_clicked()
 {
+    bmpEditor.setTreshold(ui.tresholdHorizontalSlider->value()/100.0);
     std::string toBeParsed = bmpEditor.runAlgorithm(AlgorithmType::asmAlgorithm, ui.coreHorizontalSlider->value());
     ui.asmAlglabel->setText(QString::fromStdString(toBeParsed));
     ui.inputHistogramButton->setEnabled(true);
@@ -57,7 +56,6 @@ void JAProjekt::on_saveFileButton_clicked()
         bmpEditor.setDestinationFilename(fileName.toStdString());
         ui.asmAlgButton->setEnabled(true);
         ui.cppAlgButton->setEnabled(true);
-        
     }
 }
 
@@ -86,7 +84,7 @@ void JAProjekt::on_inputHistogramButton_clicked()
 
     chartInput->legend()->setVisible(true);
     chartInput->legend()->setAlignment(Qt::AlignBottom);
-    series->setBarWidth(1);
+    series->setBarWidth(2);
     ui.graphicsView->setChart(chartInput);
     ui.graphicsView->setRenderHint(QPainter::Antialiasing);
     ui.graphicsView->show();
@@ -117,7 +115,7 @@ void JAProjekt::on_outputHistogramButton_clicked()
 
     chartInput->legend()->setVisible(true);
     chartInput->legend()->setAlignment(Qt::AlignBottom);
-    series->setBarWidth(1);
+    series->setBarWidth(2);
     ui.graphicsView->setChart(chartInput);
     ui.graphicsView->setRenderHint(QPainter::Antialiasing);
     ui.graphicsView->show();

@@ -84,7 +84,12 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 					0.2
 				);
 				threadVector.push_back(std::move(t1));*/
-
+				cppHistogram1(
+					arrToSplit + (i * rowsPerThread * rowSize),
+					arrToSplit + ((i + 1) * rowsPerThread * rowSize),
+					rowSize,
+					R, G, B
+				);
 			}
 			else
 			{
@@ -95,6 +100,12 @@ void Histogram::run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned 
 				//	0.2
 				//);
 				//threadVector.push_back(std::move(t1));
+				cppHistogram1(
+				arrToSplit + (i * rowsPerThread * rowSize),
+					arrToSplit + ((i + 1) * rowsPerThread * rowSize),
+					rowSize,
+					R, G, B
+					);
 			}
 
 		}

@@ -6,13 +6,12 @@
 #include <thread>
 
 
-typedef void(CALLBACK* BINARIZATIONPROC)(char* begin, char* end, long biWidth, float treshold);
 std::optional <std::string> BMPEditor::headerParser(std::ifstream& fileStream)
 {
 	fileStream.read((char*)(&fileHeader), 14);		//We are loading Bitmap file header
 	DWORD headerSize;
 	fileStream.read((char*)(&headerSize), 4);//gets the size of the header
-	
+
 	switch (headerSize)
 	{
 	case(40):
@@ -59,11 +58,40 @@ void BMPEditor::getMemoryStatus()
 void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType, char* arrToSplit, long rowsPerThread,
 	long rowSize, long extra, std::vector<std::thread>& threadVector)
 {
-	float treshold = 0.3;
-	HINSTANCE hDLL;
-	BINARIZATIONPROC binprocPtr;
-	
-	if(algType == AlgorithmType::cppAlgorithm)
+	if (NULL != binprocPtr)
+	{
+		for (long i = 0; i < threadCount; i++)
+		{
+			if (i + 1 == threadCount)
+			{
+				std::thread t1(binprocPtr,
+					(arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra),
+					rowSize,
+					treshold
+				);
+				threadVector.push_back(std::move(t1));
+			}
+			else
+			{
+				std::thread t1(binprocPtr,
+					(arrToSplit + (i * rowsPerThread * rowSize)),
+					(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
+					rowSize,
+					treshold
+				);
+				threadVector.push_back(std::move(t1));
+			}
+		}
+	}
+
+}
+
+void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
+	unsigned int threadCount, AlgorithmType algType)
+{
+	//Checking if DLL is there
+	if (algType == AlgorithmType::cppAlgorithm)
 	{
 		hDLL = LoadLibraryA("JAProjektCppLibrary");
 	}
@@ -71,60 +99,27 @@ void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType
 	{
 		hDLL = LoadLibraryA("JAProjektAsmLibrary");
 	}
-	if (hDLL != NULL)
-	{
-		if (algType == AlgorithmType::cppAlgorithm)
-		{
-			binprocPtr = (BINARIZATIONPROC)GetProcAddress(hDLL, "cppBinarization1");
-		}
-		else if (algType == AlgorithmType::asmAlgorithm)
-		{
-			binprocPtr = (BINARIZATIONPROC)GetProcAddress(hDLL, "asmBinarization1");
-		}
-		
-		if (NULL != binprocPtr)
-		{
-			for (long i = 0; i < threadCount; i++)
-			{
-				if (i + 1 == threadCount)
-				{
-					std::thread t1(binprocPtr,
-						(arrToSplit + (i * rowsPerThread * rowSize)),
-						(arrToSplit + ((i + 1) * rowsPerThread * rowSize) + extra),
-						rowSize,
-						treshold
-					);
-					threadVector.push_back(std::move(t1));
-				}
-				else
-				{
-					std::thread t1(binprocPtr,
-						(arrToSplit + (i * rowsPerThread * rowSize)),
-						(arrToSplit + ((i + 1) * rowsPerThread * rowSize)),
-						rowSize,
-						treshold
-					);
-					threadVector.push_back(std::move(t1));
-				}
-			}
-		}
-		else 
-		{
-			criticalEscape = "Error loading DLL!";
-			return;
-		}
-	}
-	else
+	if (hDLL == NULL)
 	{
 		criticalEscape = "DLL file not found!";
 		return;
 	}
-	
-}
+	//Checking if DLL contains functions
+	if (algType == AlgorithmType::cppAlgorithm)
+	{
+		binprocPtr = (BINARIZATIONPROC)GetProcAddress(hDLL, "cppBinarization1");
+	}
+	else if (algType == AlgorithmType::asmAlgorithm)
+	{
+		binprocPtr = (BINARIZATIONPROC)GetProcAddress(hDLL, "asmBinarization1");
+	}
+	else
+	{
+		criticalEscape = "Error loading DLL!";
+		return;
+	}
 
-void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
-	unsigned int threadCount, AlgorithmType algType)
-{
+
 	fileStream.seekg(fileHeader.bfOffBits, std::ios::beg);
 	outStream.seekp(fileHeader.bfOffBits);
 	maxProgramMemUse = maxProgramMemUse - (maxProgramMemUse % threadCount);
@@ -236,7 +231,7 @@ void BMPEditor::wipEditor(char* begin, char* end, long biWidth, float treshold)
 			*(currPos + 1) = 0;
 			*(currPos + 2) = 0;
 		}
-		if(currByteLoc + 3 > biWidth)
+		if (currByteLoc + 3 > biWidth)
 		{
 			currPos += (biWidth - currByteLoc);
 			currByteLoc = 0;
@@ -249,11 +244,7 @@ void BMPEditor::wipEditor(char* begin, char* end, long biWidth, float treshold)
 	}
 }
 
-BMPEditor::~BMPEditor()
-{
-	//delete preHistogram;
-	//delete postHistogram;
-}
+
 
 std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCount)
 {
@@ -289,21 +280,18 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 
 	preHistogram = new Histogram(destinationFilename, sourceFilename, biWidth, biHeight, fileHeader.bfOffBits);
 	preHistogram->runNoOutFile(maxProgramMemUse, threadCount);
+
 	//Runs main algorithm
-	Histogram preEditHistogram(destinationFilename, sourceFilename, biWidth, biHeight, fileHeader.bfOffBits);
-	preEditHistogram.run("_histPre.bmp", maxProgramMemUse, threadCount);
 	algorithmParallelRunner(maxProgramMemUse, fileStream, outStream, threadCount, algType);
 
 	postHistogram = new Histogram(destinationFilename, destinationFilename, biWidth, biHeight, fileHeader.bfOffBits);
 	postHistogram->runNoOutFile(maxProgramMemUse, threadCount);
-	
-	Histogram postEditHistogram(destinationFilename, destinationFilename, biWidth, biHeight, fileHeader.bfOffBits);
-	postEditHistogram.run("_histPost.bmp", maxProgramMemUse, threadCount);
+
 
 
 	fileStream.close();
 	outStream.close();
-	if(!criticalEscape.empty())
+	if (!criticalEscape.empty())
 	{
 		return criticalEscape;
 	}

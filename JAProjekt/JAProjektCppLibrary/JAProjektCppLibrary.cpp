@@ -13,7 +13,7 @@ void cppBinarization1(char* begin, char* end, long biWidth, float treshold)
 		float G = (unsigned char)*(currPos + 1);
 		float B = (unsigned char)*(currPos + 0);
 		uint16_t Res = R * 0.299 + G * 0.587 + B * 0.144;
-		if (Res > 256 * treshold)
+		if (Res >= 256 * treshold)
 		{
 			*(currPos) = 255;
 			*(currPos + 1) = 255;

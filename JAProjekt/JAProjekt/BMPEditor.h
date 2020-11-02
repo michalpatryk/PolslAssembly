@@ -22,7 +22,7 @@ enum class HeaderType
 
 class BMPEditor
 {
-	
+	float treshold = 0.3;
 	std::string sourceFilename;
 	std::string destinationFilename;
 	std::string criticalEscape;
@@ -45,6 +45,10 @@ class BMPEditor
 	
 	Histogram* preHistogram;
 	Histogram* postHistogram;
+
+	typedef void(CALLBACK* BINARIZATIONPROC)(char* begin, char* end, long biWidth, float treshold);
+	HINSTANCE hDLL;
+	BINARIZATIONPROC binprocPtr;
 	
 	std::optional<std::string> headerParser(std::ifstream& fileStream);
 	void headerRewriter(std::ifstream& fileStream, std::ofstream& outStream);
@@ -59,11 +63,10 @@ class BMPEditor
 	
 public:
 	BMPEditor() {};
-	~BMPEditor();
 	void setSourceFilename(std::string file) { sourceFilename = file; };
 	void setDestinationFilename(std::string file) { destinationFilename = file; };
 	std::string runAlgorithm(AlgorithmType algType, unsigned int threadCount);
-
+	void setTreshold(float treshold) { this->treshold = treshold; }
 	unsigned long long* getPreHistogramR() { return preHistogram->getR(); }
 	unsigned long long* getPreHistogramG() { return preHistogram->getG(); }
 	unsigned long long* getPreHistogramB() { return preHistogram->getB(); }
