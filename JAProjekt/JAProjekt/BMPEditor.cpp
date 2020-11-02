@@ -249,6 +249,12 @@ void BMPEditor::wipEditor(char* begin, char* end, long biWidth, float treshold)
 	}
 }
 
+BMPEditor::~BMPEditor()
+{
+	//delete preHistogram;
+	//delete postHistogram;
+}
+
 std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCount)
 {
 	//Stream initialization
@@ -280,10 +286,17 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	DWORDLONG memsize = statex.ullTotalPhys;
 	DWORDLONG maxProgramMemUse = memsize * 2 / 3;	//maximum 70% memory load
 
+
+	preHistogram = new Histogram(destinationFilename, sourceFilename, biWidth, biHeight, fileHeader.bfOffBits);
+	preHistogram->runNoOutFile(maxProgramMemUse, threadCount);
 	//Runs main algorithm
 	Histogram preEditHistogram(destinationFilename, sourceFilename, biWidth, biHeight, fileHeader.bfOffBits);
 	preEditHistogram.run("_histPre.bmp", maxProgramMemUse, threadCount);
 	algorithmParallelRunner(maxProgramMemUse, fileStream, outStream, threadCount, algType);
+
+	postHistogram = new Histogram(destinationFilename, destinationFilename, biWidth, biHeight, fileHeader.bfOffBits);
+	postHistogram->runNoOutFile(maxProgramMemUse, threadCount);
+	
 	Histogram postEditHistogram(destinationFilename, destinationFilename, biWidth, biHeight, fileHeader.bfOffBits);
 	postEditHistogram.run("_histPost.bmp", maxProgramMemUse, threadCount);
 

@@ -45,7 +45,7 @@ public:
     {
         if (JAProjektClass->objectName().isEmpty())
             JAProjektClass->setObjectName(QString::fromUtf8("JAProjektClass"));
-        JAProjektClass->resize(600, 571);
+        JAProjektClass->resize(809, 658);
         loadFileButton = new QPushButton(JAProjektClass);
         loadFileButton->setObjectName(QString::fromUtf8("loadFileButton"));
         loadFileButton->setGeometry(QRect(470, 40, 101, 21));
@@ -90,7 +90,7 @@ public:
         destinationSourceLabel->setGeometry(QRect(20, 70, 431, 16));
         graphicsView = new QChartView(JAProjektClass);
         graphicsView->setObjectName(QString::fromUtf8("graphicsView"));
-        graphicsView->setGeometry(QRect(20, 350, 551, 192));
+        graphicsView->setGeometry(QRect(20, 350, 781, 301));
         tresholdHorizontalSlider = new QSlider(JAProjektClass);
         tresholdHorizontalSlider->setObjectName(QString::fromUtf8("tresholdHorizontalSlider"));
         tresholdHorizontalSlider->setGeometry(QRect(20, 170, 511, 22));

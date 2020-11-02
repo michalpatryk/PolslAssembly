@@ -43,6 +43,9 @@ class BMPEditor
 	PerformanceTimer totalTimer;
 	PerformanceTimer algOnlyTimer;
 	
+	Histogram* preHistogram;
+	Histogram* postHistogram;
+	
 	std::optional<std::string> headerParser(std::ifstream& fileStream);
 	void headerRewriter(std::ifstream& fileStream, std::ofstream& outStream);
 	void getMemoryStatus();
@@ -56,8 +59,16 @@ class BMPEditor
 	
 public:
 	BMPEditor() {};
+	~BMPEditor();
 	void setSourceFilename(std::string file) { sourceFilename = file; };
 	void setDestinationFilename(std::string file) { destinationFilename = file; };
 	std::string runAlgorithm(AlgorithmType algType, unsigned int threadCount);
+
+	unsigned long long* getPreHistogramR() { return preHistogram->getR(); }
+	unsigned long long* getPreHistogramG() { return preHistogram->getG(); }
+	unsigned long long* getPreHistogramB() { return preHistogram->getB(); }
+	unsigned long long* getPostHistogramR() { return postHistogram->getR(); }
+	unsigned long long* getPostHistogramG() { return postHistogram->getG(); }
+	unsigned long long* getPostHistogramB() { return postHistogram->getB(); }
 };
 
