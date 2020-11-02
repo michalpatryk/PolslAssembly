@@ -27,9 +27,6 @@
     <QtRcc Include="JAProjekt.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtUic Include="JAProjekt.ui">
-      <Filter>Resource Files</Filter>
-    </QtUic>
     <QtMoc Include="JAProjekt.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -61,5 +58,10 @@
     <ClInclude Include="Histogram.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="JAProjekt.ui">
+      <Filter>Resource Files</Filter>
+    </QtUic>
   </ItemGroup>
 </Project>

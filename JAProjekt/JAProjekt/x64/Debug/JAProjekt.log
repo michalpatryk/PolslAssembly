@@ -1,2 +1,6 @@
-﻿  Histogram.cpp
+﻿  uic JAProjekt.ui
+  moc JAProjekt.h
+  JAProjekt.cpp
+  main.cpp
+  moc_JAProjekt.cpp
   JAProjekt.vcxproj -> C:\Users\michalpatryk\source\repos\PolslAssembly\JAProjekt\x64\Debug\JAProjekt.exe

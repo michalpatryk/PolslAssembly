@@ -6,7 +6,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-//extern "C" int _stdcall cppHistogram1(char* begin, char* end, long biWidth, unsigned long long* R, unsigned long long* G, unsigned long long* B);
+
 Histogram::Histogram(std::string destinationFilename, std::string sourceFilename, LONG biWidth, LONG biHeight, DWORD bfOffBits)
 {
 	this->destinationFilename = destinationFilename;

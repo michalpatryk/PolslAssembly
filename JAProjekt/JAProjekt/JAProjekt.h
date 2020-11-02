@@ -18,4 +18,6 @@ private slots:
     void on_cppAlgButton_clicked();
     void on_asmAlgButton_clicked();
     void on_saveFileButton_clicked();
+    void on_inputHistogramButton_clicked();
+    void on_outputHistogramButton_clicked();
 };
