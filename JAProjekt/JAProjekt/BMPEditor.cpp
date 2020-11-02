@@ -284,14 +284,20 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 		return "BMP file header error!";
 	}
 	
-	//Get histogram data on source file
-	preHistogram = new Histogram(destinationFilename, sourceFilename, biWidth, biHeight, fileHeader.bfOffBits);
-	preHistogram->runNoOutFile(maxProgramMemUse, threadCount);
+	
 
 	//Runs main algorithm
 	algorithmParallelRunner(maxProgramMemUse, fileStream, outStream, threadCount, algType);
-
+	
+	//Get histogram data on source file
+	if(preHistogram != nullptr)
+		delete preHistogram;
+	preHistogram = new Histogram(destinationFilename, sourceFilename, biWidth, biHeight, fileHeader.bfOffBits);
+	preHistogram->runNoOutFile(maxProgramMemUse, threadCount);
+	
 	//Get histogram data on output file
+	if (postHistogram != nullptr)
+		delete postHistogram;
 	postHistogram = new Histogram(destinationFilename, destinationFilename, biWidth, biHeight, fileHeader.bfOffBits);
 	postHistogram->runNoOutFile(maxProgramMemUse, threadCount);
 
@@ -305,7 +311,7 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	}
 	totalTimer.stop();
 	wholeTime = totalTimer.getCounterTotalTicks();
-	threadsTime = totalTimer.getCounterTotalTicks();
+	threadsTime = algOnlyTimer.getCounterTotalTicks();
 	std::string totalTimerResult( "Full time:		" + std::to_string(totalTimer.getCounterTotalTicks()));
 	std::string algOnlyTimeResult("DLL exec only:	" + std::to_string(algOnlyTimer.getCounterTotalTicks()));
 	std::string returnString = totalTimerResult + "\n" + algOnlyTimeResult;

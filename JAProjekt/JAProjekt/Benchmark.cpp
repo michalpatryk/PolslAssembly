@@ -11,26 +11,28 @@ void Benchmark::run()
 	std::ofstream outStreamCppThreads("benchmarkCppTotalThreads.txt");
     std::ofstream outStreamAsmTotal("benchmarkAsmTotal.txt");
 	std::ofstream outStreamAsmThreads("benchmarkAsmThreads.txt");
-	for (int i = 1; i <= 64; i++)	//cores
+	for (int i = 0; i < 64; i++)	//cores
 	{
 		
 		for (int j = 0; j < statisticsRuns; j++)	//statistics
 		{
-			bmpEditorPointer->runAlgorithm(AlgorithmType::cppAlgorithm, i);
+			bmpEditorPointer->runAlgorithm(AlgorithmType::cppAlgorithm, i+1);
 			cppWholeTimes[i][j] = bmpEditorPointer->wholeTime;
+			//cppWholeTimes[i][j] = 1;
 			cppThreadTimes[i][j] = bmpEditorPointer->threadsTime;
+			//cppThreadTimes[i][j] = 1;
 		}
 		for (int j = 0; j < statisticsRuns; j++)	//statistics
 		{
-			bmpEditorPointer->runAlgorithm(AlgorithmType::asmAlgorithm, i);
-			cppWholeTimes[i][j] = bmpEditorPointer->wholeTime;
-			cppThreadTimes[i][j] = bmpEditorPointer->threadsTime;
+			bmpEditorPointer->runAlgorithm(AlgorithmType::asmAlgorithm, i+1);
+			asmWholeTimes[i][j] = bmpEditorPointer->wholeTime;
+			asmThreadTimes[i][j] = bmpEditorPointer->threadsTime;
 		}
 		
 		
 	}
 	
-	for (int i = 1; i <= 64; i++)	//cores
+	for (int i = 0; i < 64; i++)	//cores
 	{
 		for (int j = 0; j < statisticsRuns; j++)	//statistics
 		{

@@ -43,8 +43,8 @@ class BMPEditor
 	PerformanceTimer totalTimer;
 	PerformanceTimer algOnlyTimer;
 	
-	Histogram* preHistogram;
-	Histogram* postHistogram;
+	Histogram* preHistogram = nullptr;
+	Histogram* postHistogram = nullptr;
 
 	typedef void(CALLBACK* BINARIZATIONPROC)(char* begin, char* end, long biWidth, float treshold);
 	HINSTANCE hDLL;
