@@ -3,12 +3,6 @@
 
 #include <cstdint>
 
-int testFunction(unsigned long a)
-{
-	a *= 125;
-	return a;
-}
-
 void cppBinarization1(char* begin, char* end, long biWidth, float treshold)
 {
 	char* currPos = begin;
@@ -44,24 +38,3 @@ void cppBinarization1(char* begin, char* end, long biWidth, float treshold)
 	}
 }
 
-JAPROJEKTCPPLIBRARY_API void cppHistogram1(char* begin, char* end, long biWidth, unsigned long long* R, unsigned long long* G, unsigned long long* B)
-{
-	char* currPos = begin;
-	long currByteLoc = 0;
-	while (currPos < end)
-	{
-		B[(BYTE)(*currPos)] += 1;
-		G[(BYTE)*(currPos + 1)] += 1;
-		R[(BYTE)*(currPos + 2)] += 1;
-		if (currByteLoc + 3 > biWidth)
-		{
-			currPos += (biWidth - currByteLoc);
-			currByteLoc = 0;
-		}
-		else
-		{
-			currByteLoc += 3;
-			currPos += 3;
-		}
-	}
-}

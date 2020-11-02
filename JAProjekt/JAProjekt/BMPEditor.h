@@ -25,7 +25,7 @@ class BMPEditor
 	
 	std::string sourceFilename;
 	std::string destinationFilename;
-
+	std::string criticalEscape;
 	HeaderType headerType;
 	BITMAPFILEHEADER fileHeader;
 		/*WORD  bfType;

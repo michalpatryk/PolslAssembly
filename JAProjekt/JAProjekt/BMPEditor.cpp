@@ -108,10 +108,17 @@ void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType
 				}
 			}
 		}
-		else throw "Error loading DLL!";
+		else 
+		{
+			criticalEscape = "Error loading DLL!";
+			return;
+		}
 	}
-	else throw "DLL file not found!";
-	
+	else
+	{
+		criticalEscape = "DLL file not found!";
+		return;
+	}
 	
 }
 
@@ -281,11 +288,12 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	postEditHistogram.run("_histPost.bmp", maxProgramMemUse, threadCount);
 
 
-	//TODO
-	//outstream to the rest of file
 	fileStream.close();
 	outStream.close();
-
+	if(!criticalEscape.empty())
+	{
+		return criticalEscape;
+	}
 	totalTimer.stop();
 	std::string totalTimerResult(std::to_string(totalTimer.getCounterTotalTicks()));
 	std::string algOnlyTimeResult(std::to_string(algOnlyTimer.getCounterTotalTicks()));

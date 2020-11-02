@@ -13,6 +13,7 @@ class Histogram
 	unsigned long long* R = new unsigned long long[256]();;
 	unsigned long long* G = new unsigned long long[256]();
 	unsigned long long* B = new unsigned long long[256]();
+	void cppHistogram1(char* begin, char* end, long biWidth, unsigned long long* R, unsigned long long* G, unsigned long long* B);
 public:
 	Histogram() = delete;
 	Histogram(std::string destinationFilename, std::string sourceFilename, LONG biWidth, LONG biHeight, DWORD bfOffBits);
