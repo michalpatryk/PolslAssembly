@@ -81,7 +81,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string>C++ algorithm results will go there</string>
    </property>
   </widget>
   <widget class="QLabel" name="asmAlglabel">
@@ -94,7 +94,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string>ASM algorithm results will go there</string>
    </property>
   </widget>
   <widget class="QPushButton" name="saveFileButton">
@@ -284,6 +284,22 @@
    </property>
    <property name="text">
     <string>Show output histogram</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="benchmarkButton">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>580</x>
+     <y>10</y>
+     <width>211</width>
+     <height>331</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Benchmark!</string>
    </property>
   </widget>
  </widget>

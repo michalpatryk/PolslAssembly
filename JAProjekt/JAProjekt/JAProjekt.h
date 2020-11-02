@@ -20,4 +20,5 @@ private slots:
     void on_saveFileButton_clicked();
     void on_inputHistogramButton_clicked();
     void on_outputHistogramButton_clicked();
+    void on_benchmarkButton_clicked();
 };

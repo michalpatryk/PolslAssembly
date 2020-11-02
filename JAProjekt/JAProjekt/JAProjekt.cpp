@@ -1,9 +1,9 @@
 #include "JAProjekt.h"
-
+#include "Benchmark.h"
 #include <QFileDialog>
 #include <thread>
 #include <QtCharts>
-
+#include <fstream>
 using namespace QtCharts;
 JAProjekt::JAProjekt(QWidget *parent)
     : QWidget(parent)
@@ -56,6 +56,7 @@ void JAProjekt::on_saveFileButton_clicked()
         bmpEditor.setDestinationFilename(fileName.toStdString());
         ui.asmAlgButton->setEnabled(true);
         ui.cppAlgButton->setEnabled(true);
+        ui.benchmarkButton->setEnabled(true);
     }
 }
 
@@ -119,4 +120,14 @@ void JAProjekt::on_outputHistogramButton_clicked()
     ui.graphicsView->setChart(chartInput);
     ui.graphicsView->setRenderHint(QPainter::Antialiasing);
     ui.graphicsView->show();
+}
+
+void JAProjekt::on_benchmarkButton_clicked()
+{
+	
+   
+    bmpEditor.setTreshold(ui.tresholdHorizontalSlider->value() / 100.0);
+    Benchmark bench(&bmpEditor);
+    bench.run();
+   
 }

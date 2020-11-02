@@ -49,6 +49,9 @@ class BMPEditor
 	typedef void(CALLBACK* BINARIZATIONPROC)(char* begin, char* end, long biWidth, float treshold);
 	HINSTANCE hDLL;
 	BINARIZATIONPROC binprocPtr;
+
+	
+
 	
 	std::optional<std::string> headerParser(std::ifstream& fileStream);
 	void headerRewriter(std::ifstream& fileStream, std::ofstream& outStream);
@@ -62,6 +65,8 @@ class BMPEditor
 	void wipEditor(char* begin, char* end, long biWidth, float treshold);
 	
 public:
+	unsigned long long wholeTime;
+	unsigned long long threadsTime;
 	BMPEditor() {};
 	void setSourceFilename(std::string file) { sourceFilename = file; };
 	void setDestinationFilename(std::string file) { destinationFilename = file; };

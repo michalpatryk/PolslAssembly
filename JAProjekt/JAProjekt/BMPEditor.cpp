@@ -102,6 +102,7 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	if (hDLL == NULL)
 	{
 		criticalEscape = "DLL file not found!";
+		FreeLibrary(hDLL);
 		return;
 	}
 	//Checking if DLL contains functions
@@ -170,6 +171,7 @@ void BMPEditor::algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstrea
 	}
 	algOnlyTimer.stop();
 	outStream.write(arrToSplit, remainingFileSize);
+	FreeLibrary(hDLL);
 	delete[] arrToSplit;
 }
 
@@ -276,14 +278,20 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 	getMemoryStatus();
 	DWORDLONG memsize = statex.ullTotalPhys;
 	DWORDLONG maxProgramMemUse = memsize * 2 / 3;	//maximum 70% memory load
-
-
+	//Memory pointer check
+	if(fileHeader.bfOffBits > biWidth*biHeight)
+	{
+		return "BMP file header error!";
+	}
+	
+	//Get histogram data on source file
 	preHistogram = new Histogram(destinationFilename, sourceFilename, biWidth, biHeight, fileHeader.bfOffBits);
 	preHistogram->runNoOutFile(maxProgramMemUse, threadCount);
 
 	//Runs main algorithm
 	algorithmParallelRunner(maxProgramMemUse, fileStream, outStream, threadCount, algType);
 
+	//Get histogram data on output file
 	postHistogram = new Histogram(destinationFilename, destinationFilename, biWidth, biHeight, fileHeader.bfOffBits);
 	postHistogram->runNoOutFile(maxProgramMemUse, threadCount);
 
@@ -296,8 +304,10 @@ std::string BMPEditor::runAlgorithm(AlgorithmType algType, unsigned int threadCo
 		return criticalEscape;
 	}
 	totalTimer.stop();
-	std::string totalTimerResult(std::to_string(totalTimer.getCounterTotalTicks()));
-	std::string algOnlyTimeResult(std::to_string(algOnlyTimer.getCounterTotalTicks()));
+	wholeTime = totalTimer.getCounterTotalTicks();
+	threadsTime = totalTimer.getCounterTotalTicks();
+	std::string totalTimerResult( "Full time:		" + std::to_string(totalTimer.getCounterTotalTicks()));
+	std::string algOnlyTimeResult("DLL exec only:	" + std::to_string(algOnlyTimer.getCounterTotalTicks()));
 	std::string returnString = totalTimerResult + "\n" + algOnlyTimeResult;
 	return returnString;
 }

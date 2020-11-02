@@ -105,6 +105,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Benchmark.cpp" />
     <ClCompile Include="Histogram.cpp" />
     <ClCompile Include="PerformanceTimer.cpp" />
     <QtRcc Include="JAProjekt.qrc" />
@@ -115,6 +116,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Benchmark.h" />
     <ClInclude Include="BMPEditor.h" />
     <ClInclude Include="Histogram.h" />
     <ClInclude Include="PerformanceTimer.h" />

@@ -40,6 +40,7 @@ public:
     QLabel *coreCountLabel;
     QPushButton *inputHistogramButton;
     QPushButton *outputHistogramButton;
+    QPushButton *benchmarkButton;
 
     void setupUi(QWidget *JAProjektClass)
     {
@@ -116,6 +117,10 @@ public:
         outputHistogramButton->setObjectName(QString::fromUtf8("outputHistogramButton"));
         outputHistogramButton->setEnabled(false);
         outputHistogramButton->setGeometry(QRect(310, 320, 261, 23));
+        benchmarkButton = new QPushButton(JAProjektClass);
+        benchmarkButton->setObjectName(QString::fromUtf8("benchmarkButton"));
+        benchmarkButton->setEnabled(false);
+        benchmarkButton->setGeometry(QRect(580, 10, 211, 331));
 
         retranslateUi(JAProjektClass);
         QObject::connect(coreHorizontalSlider, SIGNAL(valueChanged(int)), coreLabel, SLOT(setNum(int)));
@@ -131,8 +136,8 @@ public:
         sourceLocationLabel->setText(QCoreApplication::translate("JAProjektClass", "Select source file", nullptr));
         cppAlgButton->setText(QCoreApplication::translate("JAProjektClass", "C++ algorithm", nullptr));
         asmAlgButton->setText(QCoreApplication::translate("JAProjektClass", "Assembly algorithm", nullptr));
-        cppAlglabel->setText(QCoreApplication::translate("JAProjektClass", "TextLabel", nullptr));
-        asmAlglabel->setText(QCoreApplication::translate("JAProjektClass", "TextLabel", nullptr));
+        cppAlglabel->setText(QCoreApplication::translate("JAProjektClass", "C++ algorithm results will go there", nullptr));
+        asmAlglabel->setText(QCoreApplication::translate("JAProjektClass", "ASM algorithm results will go there", nullptr));
         saveFileButton->setText(QCoreApplication::translate("JAProjektClass", "Save file", nullptr));
         coreLabel->setText(QCoreApplication::translate("JAProjektClass", "1", nullptr));
         aboutLabel->setText(QCoreApplication::translate("JAProjektClass", "Binaryzacja obrazu BMP, Micha\305\202 Urba\305\204czyk 2020", nullptr));
@@ -142,6 +147,7 @@ public:
         coreCountLabel->setText(QCoreApplication::translate("JAProjektClass", "Cores:", nullptr));
         inputHistogramButton->setText(QCoreApplication::translate("JAProjektClass", "Show input histogram", nullptr));
         outputHistogramButton->setText(QCoreApplication::translate("JAProjektClass", "Show output histogram", nullptr));
+        benchmarkButton->setText(QCoreApplication::translate("JAProjektClass", "Benchmark!", nullptr));
     } // retranslateUi
 
 };
