@@ -3,7 +3,7 @@
 #include <QtWidgets/QWidget>
 #include "ui_JAProjekt.h"
 #include "BMPEditor.h"
-
+//class to draw graphics
 class JAProjekt : public QWidget
 {
     Q_OBJECT

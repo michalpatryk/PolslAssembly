@@ -1,6 +1,7 @@
 #pragma once
 #define NOMINMAX
 #include <Windows.h>
+//class to measure ticks
 class PerformanceTimer
 {
 	LARGE_INTEGER li;
