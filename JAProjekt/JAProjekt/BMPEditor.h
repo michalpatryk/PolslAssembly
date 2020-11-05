@@ -19,7 +19,7 @@ enum class HeaderType
 	v1, v5
 };
 
-
+//Main class running all of the bmp edition stuff, contatining all tools and checks necessary.
 class BMPEditor
 {
 	float treshold = 0.3;
@@ -53,16 +53,16 @@ class BMPEditor
 	
 
 	
-	std::optional<std::string> headerParser(std::ifstream& fileStream);
+	std::optional<std::string> headerParser(std::ifstream& fileStream);	
 	void headerRewriter(std::ifstream& fileStream, std::ofstream& outStream);
-	void getMemoryStatus();
+	void getMemoryStatus();	//runs some windows functions to get RAM size and save it to statex
 	void algorithmParallelRunner(DWORDLONG maxProgramMemUse, std::ifstream& fileStream, std::ofstream& outStream,
-		unsigned int threadCount, AlgorithmType algType);
+		unsigned int threadCount, AlgorithmType algType);	
 	void BMPEditor::algorithmForLoop(unsigned int threadCount, AlgorithmType algType, char* arrToSplit, long rowsPerThread,
 		long rowSize, long extra, std::vector<std::thread>& threadVector);
-	bool isEnoughDiskSpace();
+	bool isEnoughDiskSpace();	//usues windows functions to check for free disk space
 
-	void wipEditor(char* begin, char* end, long biWidth, float treshold);
+	void wipEditor(char* begin, char* end, long biWidth, float treshold);	// debug only binarization function
 	
 public:
 	unsigned long long wholeTime;
@@ -70,7 +70,7 @@ public:
 	BMPEditor() {};
 	void setSourceFilename(std::string file) { sourceFilename = file; };
 	void setDestinationFilename(std::string file) { destinationFilename = file; };
-	std::string runAlgorithm(AlgorithmType algType, unsigned int threadCount);
+	std::string runAlgorithm(AlgorithmType algType, unsigned int threadCount);	// runs main algorithm
 	void setTreshold(float treshold) { this->treshold = treshold; }
 	unsigned long long* getPreHistogramR() { return preHistogram->getR(); }
 	unsigned long long* getPreHistogramG() { return preHistogram->getG(); }

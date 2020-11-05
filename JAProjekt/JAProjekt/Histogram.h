@@ -3,6 +3,7 @@
 #include <string>
 #include <Windows.h>
 #include <fstream>
+//class used to make histograms out of bmp files. Standalone, doesn't do any checks - assumes they were done in bmpeditor
 class Histogram
 {
 	std::string sourceFilename;
@@ -17,7 +18,7 @@ class Histogram
 public:
 	Histogram() {};
 	Histogram(std::string destinationFilename, std::string sourceFilename, LONG biWidth, LONG biHeight, DWORD bfOffBits);
-	//void run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned int threadCount);
+	//void run(std::string endAppend, DWORDLONG maxProgramMemUse, unsigned int threadCount);	//deprecated
 
 	
 	void runNoOutFile(DWORDLONG maxProgramMemUse, unsigned int threadCount);

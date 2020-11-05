@@ -1,6 +1,4 @@
 #include "BMPEditor.h"
-//#pragma comment(lib, "JAProjektCppLibrary.dll")
-//#include <JAProjektCppLibrary.dll>
 #include <filesystem>
 #include <iostream>
 #include <thread>
@@ -48,6 +46,7 @@ void BMPEditor::headerRewriter(std::ifstream& fileStream, std::ofstream& outStre
 	char* rewriter = new char[fileHeader.bfOffBits];
 	fileStream.read(rewriter, fileHeader.bfOffBits);
 	outStream.write(rewriter, fileHeader.bfOffBits);
+	delete[] rewriter;
 }
 
 void BMPEditor::getMemoryStatus()

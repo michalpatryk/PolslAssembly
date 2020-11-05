@@ -1,4 +1,4 @@
-;Bitmap binarization, version 0.0
+;Bitmap binarization, version 1.0
 ;Author: Michał Urbańczyk
 ;Subject: Jezyki Assemblerowe
 ;Year: 2020/2021
@@ -10,6 +10,7 @@
 ;else [R, G, B] = [0, 0, 0]
 ;v0.9 Algorithm is working for sequential execution
 ;v0.9.8 Algorithm running for all data
+;v1.0	Final code review
 ;Naming convention is asmBinarization{version number}
 
 .data
@@ -130,7 +131,7 @@ asmBinarization1 proc
 	pop rsp						; Return rsp from stack
 	pop rdi						; Return rdi from stack 
 	pop rbp						; Return rbp from stack
-	mov eax, 0					; Function always works
+	mov eax, 0					; Function always works and always returns 0
 	ret							; Return from function
 asmBinarization1 endp
 end

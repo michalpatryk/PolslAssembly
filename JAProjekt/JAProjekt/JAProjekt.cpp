@@ -29,21 +29,37 @@ void JAProjekt::on_loadFileButton_clicked()
 }
 
 void JAProjekt::on_cppAlgButton_clicked()
-{
+{   //erroneous file injection protection
+    ui.inputHistogramButton->setEnabled(false);
+    ui.outputHistogramButton->setEnabled(false);
+	
     bmpEditor.setTreshold(ui.tresholdHorizontalSlider->value()/100.0);
     std::string toBeParsed = bmpEditor.runAlgorithm(AlgorithmType::cppAlgorithm, ui.coreHorizontalSlider->value());
     ui.cppAlglabel->setText(QString::fromStdString(toBeParsed));
-    ui.inputHistogramButton->setEnabled(true);
-    ui.outputHistogramButton->setEnabled(true);
+	//last minute fix - didn't think of someone inserting bad file and trying to open histogram afterwards
+    std::string safeguard("F");
+	if(toBeParsed[0] == safeguard[0])
+	{
+        ui.inputHistogramButton->setEnabled(true);
+        ui.outputHistogramButton->setEnabled(true);
+	}
 }
 
 void JAProjekt::on_asmAlgButton_clicked()
 {
+    ui.inputHistogramButton->setEnabled(false);
+    ui.outputHistogramButton->setEnabled(false);
+	
     bmpEditor.setTreshold(ui.tresholdHorizontalSlider->value()/100.0);
     std::string toBeParsed = bmpEditor.runAlgorithm(AlgorithmType::asmAlgorithm, ui.coreHorizontalSlider->value());
     ui.asmAlglabel->setText(QString::fromStdString(toBeParsed));
-    ui.inputHistogramButton->setEnabled(true);
-    ui.outputHistogramButton->setEnabled(true);
+	//same as in cppAlg
+    std::string safeguard("F");
+    if (toBeParsed[0] == safeguard[0])
+    {
+        ui.inputHistogramButton->setEnabled(true);
+        ui.outputHistogramButton->setEnabled(true);
+    }
 }
 
 void JAProjekt::on_saveFileButton_clicked()
