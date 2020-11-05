@@ -13,6 +13,8 @@ public:
     BMPEditor bmpEditor;
 private:
     Ui::JAProjektClass ui;
+    QChart* chartInput = nullptr;
+    QBarSeries* series = nullptr;
 private slots:
     void on_loadFileButton_clicked();
     void on_cppAlgButton_clicked();

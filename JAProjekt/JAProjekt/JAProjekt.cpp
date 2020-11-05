@@ -62,11 +62,18 @@ void JAProjekt::on_saveFileButton_clicked()
 
 void JAProjekt::on_inputHistogramButton_clicked()
 {
-    QChart* chartInput = new QChart();
+	if(chartInput != nullptr)
+	{
+        chartInput->removeSeries(series);
+        series->clear();
+	}
+    
+    chartInput = new QChart();
     QBarSet* setRed = new QBarSet("Red");
     QBarSet* setGreen = new QBarSet("Green");
     QBarSet* setBlue = new QBarSet("Blue");
-    QBarSeries* series = new QBarSeries();
+    series = new QBarSeries();
+    
     for (int i = 0; i < 256; i++) {
         *setRed << bmpEditor.getPreHistogramR()[i];
         *setGreen << bmpEditor.getPreHistogramG()[i];
@@ -86,18 +93,26 @@ void JAProjekt::on_inputHistogramButton_clicked()
     chartInput->legend()->setVisible(true);
     chartInput->legend()->setAlignment(Qt::AlignBottom);
     series->setBarWidth(2);
+
     ui.graphicsView->setChart(chartInput);
     ui.graphicsView->setRenderHint(QPainter::Antialiasing);
     ui.graphicsView->show();
+
 }
 
 void JAProjekt::on_outputHistogramButton_clicked()
 {
-    QChart* chartInput = new QChart();
+    if (chartInput != nullptr)
+    {
+        chartInput->removeSeries(series);
+        series->clear();
+    }
+
+    chartInput = new QChart();
     QBarSet* setRed = new QBarSet("Red");
     QBarSet* setGreen = new QBarSet("Green");
     QBarSet* setBlue = new QBarSet("Blue");
-    QBarSeries* series = new QBarSeries();
+    series = new QBarSeries();
     for (int i = 0; i < 256; i++) {
         *setRed << bmpEditor.getPostHistogramR()[i];
         *setGreen << bmpEditor.getPostHistogramG()[i];

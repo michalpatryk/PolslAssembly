@@ -220,7 +220,7 @@ void BMPEditor::wipEditor(char* begin, char* end, long biWidth, float treshold)
 		float R = *(currPos);
 		float G = *(currPos + 1);
 		float B = *(currPos + 2);
-		uint8_t Res = R * 0.299 + G * 0.587 + B * 0.144;
+		uint8_t Res = R * 0.298 + G * 0.587 + B * 0.144;
 		if (Res > 256 * treshold)
 		{
 			*(currPos) = 255;

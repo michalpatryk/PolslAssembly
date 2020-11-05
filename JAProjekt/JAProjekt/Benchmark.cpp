@@ -1,5 +1,6 @@
 #include "Benchmark.h"
 #include <fstream>
+#include <sstream>
 void Benchmark::run()
 {
 
@@ -8,9 +9,11 @@ void Benchmark::run()
 	asmWholeTimes = std::vector<std::vector<unsigned long long>>(64, std::vector<unsigned long long>(statisticsRuns, 0));
 	asmThreadTimes = std::vector<std::vector<unsigned long long>>(64, std::vector<unsigned long long>(statisticsRuns, 0));
 	std::ofstream outStreamCppTotal("benchmarkCppTotal.txt");
-	std::ofstream outStreamCppThreads("benchmarkCppTotalThreads.txt");
+	std::ofstream outStreamCppThreads("benchmarkCppThreads.txt");
     std::ofstream outStreamAsmTotal("benchmarkAsmTotal.txt");
 	std::ofstream outStreamAsmThreads("benchmarkAsmThreads.txt");
+
+	std::ostringstream os;
 	for (int i = 0; i < 64; i++)	//cores
 	{
 		
@@ -28,25 +31,27 @@ void Benchmark::run()
 			asmWholeTimes[i][j] = bmpEditorPointer->wholeTime;
 			asmThreadTimes[i][j] = bmpEditorPointer->threadsTime;
 		}
+		os << i;
+		OutputDebugStringA(os.str().c_str());
 		
-		
+
 	}
 	
 	for (int i = 0; i < 64; i++)	//cores
 	{
-		for (int j = 0; j < statisticsRuns; j++)	//statistics
+		for (int j = 0; j < statisticsRuns - 1; j++)	//statistics
 		{
 			outStreamCppTotal << cppWholeTimes[i][j] << ",";
 			outStreamCppThreads << cppThreadTimes[i][j] << ",";
 			outStreamAsmTotal << asmWholeTimes[i][j] << ",";
 			outStreamAsmThreads << asmThreadTimes[i][j] << ",";
 		}
-		outStreamCppTotal << ";" << std::endl;
-		outStreamCppThreads << ";" << std::endl;
-		outStreamAsmTotal << ";" << std::endl;
-		outStreamAsmThreads << ";" << std::endl;
+		outStreamCppTotal << cppWholeTimes[i][statisticsRuns - 1] << std::endl;;
+		outStreamCppThreads << cppThreadTimes[i][statisticsRuns - 1] << std::endl;;
+		outStreamAsmTotal << asmWholeTimes[i][statisticsRuns - 1] << std::endl;;
+		outStreamAsmThreads << asmThreadTimes[i][statisticsRuns - 1] << std::endl;;
 	}
-	//outStreamAsm.
+
 	outStreamCppTotal.close();
 	outStreamCppThreads.close();
 	outStreamAsmTotal.close();
